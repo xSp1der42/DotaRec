@@ -1,0 +1,74 @@
+.match-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.match-row {
+  display: grid;
+  grid-template-columns: 1fr 50px 1fr;
+  align-items: center;
+  background-color: #1e1e2f;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+
+.match-row.finished {
+  opacity: 0.8;
+}
+
+.team-button {
+  padding: 20px;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-align: center;
+  background-color: transparent;
+  color: #c3dafe;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  position: relative;
+}
+
+.team-button:hover {
+  background-color: #4a4a68;
+}
+
+.team-button.selected {
+  background-color: #5a67d8;
+  color: #fff;
+}
+
+/* Стили для результатов */
+.team-button.correct::after {
+  content: '✔';
+  color: #2ed573;
+  font-size: 1.5em;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.team-button.incorrect::after {
+  content: '✖';
+  color: #ff4757;
+  font-size: 1.5em;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.team-button.winner {
+    border: 2px solid #2ed573;
+}
+
+
+.vs-text {
+  font-size: 1.2em;
+  font-weight: 900;
+  color: #6e6e80;
+  text-align: center;
+}
