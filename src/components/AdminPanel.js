@@ -32,22 +32,24 @@ const AdminPanel = ({ players, onAddPlayer, onUpdatePlayer, onDeletePlayer, onRe
   const handleAddNew = () => {
     setPlayerToEdit(null);
     setIsFormVisible(true);
-    // ИЗМЕНЕНИЕ: Добавляем плавную прокрутку вверх
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleEdit = (player) => {
     setPlayerToEdit(player);
     setIsFormVisible(true);
-    // ИЗМЕНЕНИЕ: Добавляем плавную прокрутку вверх
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSave = (playerData) => {
+  // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+  // Теперь функция принимает ДВА аргумента: playerData и imageFile
+  const handleSave = (playerData, imageFile) => {
     if (playerData.id) {
-      onUpdatePlayer(playerData);
+      // И передает ДВА аргумента дальше
+      onUpdatePlayer(playerData, imageFile);
     } else {
-      onAddPlayer(playerData);
+      // И сюда тоже передает ДВА аргумента
+      onAddPlayer(playerData, imageFile);
     }
     setIsFormVisible(false);
     setPlayerToEdit(null);

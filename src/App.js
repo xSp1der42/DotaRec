@@ -62,7 +62,7 @@ function App() {
 
   const handleAddPlayer = async (playerData, imageFile) => {
     const imageUrl = await uploadPlayerImage(imageFile);
-    delete playerData.photoUrl;
+    // delete playerData.photoUrl; // <-- ЭТА СТРОКА УДАЛЕНА
     delete playerData.image;
     const newPlayerData = { ...playerData, id: uuidv4(), clicks: 0, image_url: imageUrl };
     const { data, error } = await supabase.from('players').insert(newPlayerData).select().single();
@@ -78,7 +78,7 @@ function App() {
     if (imageFile) {
       imageUrl = await uploadPlayerImage(imageFile);
     }
-    delete updatedPlayerData.photoUrl;
+    // delete updatedPlayerData.photoUrl; // <-- ЭТА СТРОКА УДАЛЕНА
     delete updatedPlayerData.image;
     const finalPlayerData = { ...updatedPlayerData, image_url: imageUrl };
     const { data, error } = await supabase.from('players').update(finalPlayerData).eq('id', finalPlayerData.id).select().single();
@@ -223,10 +223,7 @@ function App() {
           <Route path="/pickem" element={<PickemPage events={pickemEvents} userPicks={userPicks} onPick={handleUserPick} />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin/cards" element={session ? <AdminPanel players={players} onAddPlayer={handleAddPlayer} onUpdatePlayer={handleUpdatePlayer} onDeletePlayer={handleDeletePlayer} onReorderPlayers={handleReorderPlayers} /> : <LoginPage />} />
-          
-          {/* --- ВОТ ИСПРАВЛЕННАЯ СТРОКА --- */}
           <Route path="/admin/pickem" element={session ? <AdminPickemDashboard events={pickemEvents} onAddEvent={handleAddEvent} onDeleteEvent={handleDeleteEvent} onSaveMatch={handleSaveMatch} onDeleteMatch={handleDeleteMatch} /> : <LoginPage />} />
-        
         </Routes>
       </main>
     </div>
