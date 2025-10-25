@@ -81,3 +81,69 @@ body {
   max-width: 1680px;
   margin: 0 auto;
 }
+
+/* --- НОВЫЕ СТИЛИ ДЛЯ СТРАНИЦЫ ВХОДА --- */
+.login-page-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 15vh;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-form h2 {
+  text-align: center;
+  font-size: 28px;
+  color: #f0f0f0;
+  margin: 0 0 10px 0;
+  font-weight: 400;
+}
+
+.login-form input {
+  background-color: #f0f0f0;
+  border: 1px solid #4a4a68;
+  color: #1e1e2f;
+  border-radius: 6px;
+  padding: 14px;
+  font-size: 16px;
+}
+
+.login-form button {
+  background-color: #e0e0e0;
+  border: 1px solid #b0b0b0;
+  color: #2a2a3e;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 8px;
+}
+
+.login-form button:hover:not(:disabled) {
+  background-color: #d0d0d0;
+}
+
+.login-form button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.login-error {
+  color: #ff4757;
+  background-color: rgba(255, 71, 87, 0.1);
+  border: 1px solid #ff4757;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 14px;
+}
