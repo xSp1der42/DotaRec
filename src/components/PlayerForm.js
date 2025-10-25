@@ -7,7 +7,7 @@ const getInitialFormData = () => ({
   id: null,
   ovr: '',
   game: 'dota',
-  photoUrl: '',
+  image_url: '',
   nickname: '',
   fullName: '',
   team: '',
@@ -16,26 +16,33 @@ const getInitialFormData = () => ({
   detailedInfo: '',
   achievements: [],
   matchHistory: [],
-  position: 'POS 1', 
+  position: 'POS 1',
 });
 
 const PlayerForm = ({ onSave, onCancel, playerToEdit }) => {
   const [formData, setFormData] = useState(getInitialFormData());
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
 
   const [newAchievement, setNewAchievement] = useState({ year: '', event: '', placing: '' });
   const [newMatch, setNewMatch] = useState({ event: '', opponent: '', result: '' });
-  
-  // ИЗМЕНЕНИЕ: Состояние для отслеживания редактируемого достижения
   const [editingAchievementIndex, setEditingAchievementIndex] = useState(null);
 
   useEffect(() => {
     if (playerToEdit) {
       setFormData({
         ...getInitialFormData(),
-        ...playerToEdit
+        ...playerToEdit,
+        stats: playerToEdit.stats || (playerToEdit.game === 'dota' ? emptyDotaStats : emptyCsStats),
+        achievements: playerToEdit.achievements || [],
+        matchHistory: playerToEdit.matchHistory || [],
       });
+      setImagePreview(playerToEdit.image_url || '');
+      setImageFile(null);
     } else {
       setFormData(getInitialFormData());
+      setImagePreview('');
+      setImageFile(null);
     }
   }, [playerToEdit]);
 
@@ -60,17 +67,16 @@ const PlayerForm = ({ onSave, onCancel, playerToEdit }) => {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, photoUrl: reader.result });
-      };
-      reader.readAsDataURL(file);
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  // --- ИЗМЕНЕНИЕ: Обновленная логика управления достижениями ---
-  
-  // Отсортированный массив достижений для отображения в админ-панели
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData, imageFile);
+  };
+
   const sortedAchievementsForForm = useMemo(() => {
     if (!formData.achievements) return [];
     return [...formData.achievements].sort((a, b) => new Date(b.year) - new Date(a.year));
@@ -79,16 +85,14 @@ const PlayerForm = ({ onSave, onCancel, playerToEdit }) => {
   const handleNewAchievementChange = (e) => {
     setNewAchievement({ ...newAchievement, [e.target.name]: e.target.value });
   };
-  
+
   const handleEditAchievement = (indexInSortedList) => {
     const achievementToEdit = sortedAchievementsForForm[indexInSortedList];
-    // Находим реальный индекс в исходном, несортированном массиве
     const originalIndex = formData.achievements.findIndex(ach => ach === achievementToEdit);
-    
     setEditingAchievementIndex(originalIndex);
     setNewAchievement(achievementToEdit);
   };
-  
+
   const handleCancelEdit = () => {
     setEditingAchievementIndex(null);
     setNewAchievement({ year: '', event: '', placing: '' });
@@ -96,39 +100,34 @@ const PlayerForm = ({ onSave, onCancel, playerToEdit }) => {
 
   const handleAddOrUpdateAchievement = () => {
     if (!newAchievement.year || !newAchievement.event || !newAchievement.placing) return;
-
     let updatedAchievements;
     if (editingAchievementIndex !== null) {
-      // Обновляем существующий элемент
       updatedAchievements = formData.achievements.map((item, index) =>
         index === editingAchievementIndex ? newAchievement : item
       );
     } else {
-      // Добавляем новый элемент
-      updatedAchievements = [...formData.achievements, newAchievement];
+      updatedAchievements = [...(formData.achievements || []), newAchievement];
     }
     setFormData({ ...formData, achievements: updatedAchievements });
-    handleCancelEdit(); // Сбрасываем форму
+    handleCancelEdit();
   };
-  
+
   const handleDeleteAchievement = (indexInSortedList) => {
     const achievementToDelete = sortedAchievementsForForm[indexInSortedList];
     const updatedAchievements = formData.achievements.filter(ach => ach !== achievementToDelete);
     setFormData({ ...formData, achievements: updatedAchievements });
   };
-  
-  // --- Логика управления матчами (без изменений) ---
+
   const handleNewMatchChange = (e) => setNewMatch({ ...newMatch, [e.target.name]: e.target.value });
+
   const handleAddMatch = () => {
     if (!newMatch.event || !newMatch.opponent || !newMatch.result) return;
-    setFormData({ ...formData, matchHistory: [...formData.matchHistory, newMatch] });
+    setFormData({ ...formData, matchHistory: [...(formData.matchHistory || []), newMatch] });
     setNewMatch({ event: '', opponent: '', result: '' });
   };
-  const handleDeleteMatch = (index) => setFormData({ ...formData, matchHistory: formData.matchHistory.filter((_, i) => i !== index) });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
+  const handleDeleteMatch = (index) => {
+    setFormData({ ...formData, matchHistory: formData.matchHistory.filter((_, i) => i !== index) });
   };
 
   const renderDotaStats = () => (
@@ -151,11 +150,9 @@ const PlayerForm = ({ onSave, onCancel, playerToEdit }) => {
     </>
   );
 
-
   return (
     <form onSubmit={handleSubmit} className="player-form">
       <h2>{playerToEdit ? 'Редактировать карточку' : 'Создать новую карточку'}</h2>
-      
       <h3>Основная информация</h3>
       <div className="form-grid">
         <div className="form-group"> <label>Никнейм</label> <input type="text" name="nickname" value={formData.nickname} onChange={handleChange} required /> </div>
@@ -163,7 +160,6 @@ const PlayerForm = ({ onSave, onCancel, playerToEdit }) => {
         <div className="form-group"> <label>Команда</label> <input type="text" name="team" value={formData.team} onChange={handleChange} /> </div>
         <div className="form-group"> <label>Общий рейтинг (OVR)</label> <input type="number" name="ovr" value={formData.ovr} onChange={handleChange} min="1" max="99" required /> </div>
         <div className="form-group"> <label>Игра</label> <select name="game" value={formData.game} onChange={handleChange}> <option value="dota">Dota 2</option> <option value="cs">CS</option> </select> </div>
-        
         {formData.game === 'dota' && (
           <div className="form-group">
             <label>Позиция (Dota 2)</label>
@@ -176,21 +172,24 @@ const PlayerForm = ({ onSave, onCancel, playerToEdit }) => {
             </select>
           </div>
         )}
-
         <div className="form-group"> <label>Редкость</label> <select name="rarity" value={formData.rarity} onChange={handleChange}> <option value="common">Common</option> <option value="rare">Rare</option> <option value="epic">Epic</option> <option value="legendary">Legendary</option> <option value="icon">Icon</option> </select> </div>
-        <div className="form-group full-width"> <label>Фотография игрока</label> <input type="file" name="photo" onChange={handlePhotoChange} accept="image/*" /> {formData.photoUrl && (<div className="photo-preview-container"> <p>Текущее фото:</p> <img src={formData.photoUrl} alt="Preview" className="photo-preview"/> </div>)} </div>
+        <div className="form-group full-width">
+          <label>Фотография игрока</label>
+          <input type="file" name="photo" onChange={handlePhotoChange} accept="image/*" />
+          {imagePreview && (
+            <div className="photo-preview-container">
+              <p>Текущее фото:</p>
+              <img src={imagePreview} alt="Preview" className="photo-preview"/>
+            </div>
+          )}
+        </div>
       </div>
-
       <h3>Статистика</h3>
-      <div className="form-grid">
-        {formData.game === 'dota' ? renderDotaStats() : renderCsStats()}
-      </div>
-
+      <div className="form-grid">{formData.game === 'dota' ? renderDotaStats() : renderCsStats()}</div>
       <div className="form-group full-width">
         <h3>Подробная информация</h3>
         <textarea name="detailedInfo" value={formData.detailedInfo} onChange={handleChange} rows="5" placeholder="История в командах, сильные стороны, интересные факты..."></textarea>
       </div>
-
       <div className="dynamic-list-editor">
         <h3>Достижения</h3>
         <div className="admin-item-list">
@@ -208,15 +207,10 @@ const PlayerForm = ({ onSave, onCancel, playerToEdit }) => {
           <input type="date" name="year" value={newAchievement.year} onChange={handleNewAchievementChange} placeholder="Дата"/>
           <input type="text" name="event" value={newAchievement.event} onChange={handleNewAchievementChange} placeholder="Название турнира"/>
           <input type="text" name="placing" value={newAchievement.placing} onChange={handleNewAchievementChange} placeholder="Место (e.g., 1st)"/>
-          <button type="button" onClick={handleAddOrUpdateAchievement} className="add-item-btn">
-            {editingAchievementIndex !== null ? 'Обновить' : 'Добавить'}
-          </button>
-          {editingAchievementIndex !== null && (
-            <button type="button" onClick={handleCancelEdit} className="cancel-edit-btn">Отмена</button>
-          )}
+          <button type="button" onClick={handleAddOrUpdateAchievement} className="add-item-btn">{editingAchievementIndex !== null ? 'Обновить' : 'Добавить'}</button>
+          {editingAchievementIndex !== null && (<button type="button" onClick={handleCancelEdit} className="cancel-edit-btn">Отмена</button>)}
         </div>
       </div>
-
       <div className="dynamic-list-editor">
         <h3>История матчей</h3>
         <div className="admin-item-list">
@@ -224,7 +218,7 @@ const PlayerForm = ({ onSave, onCancel, playerToEdit }) => {
             <div key={index} className="admin-list-item">
               <span>{match.event} vs <strong>{match.opponent}</strong> - {match.result}</span>
               <div className="item-actions">
-                 <button type="button" onClick={() => handleDeleteMatch(index)} className="delete-item-btn">&times;</button>
+                <button type="button" onClick={() => handleDeleteMatch(index)} className="delete-item-btn">&times;</button>
               </div>
             </div>
           ))}
@@ -236,7 +230,6 @@ const PlayerForm = ({ onSave, onCancel, playerToEdit }) => {
           <button type="button" onClick={handleAddMatch} className="add-item-btn">Добавить</button>
         </div>
       </div>
-
       <div className="form-buttons">
         <button type="submit" className="save-btn">Сохранить</button>
         <button type="button" onClick={onCancel} className="cancel-btn">Отмена</button>
