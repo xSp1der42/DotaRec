@@ -46,23 +46,28 @@ function App() {
   useEffect(() => { localStorage.setItem('pickem-events', JSON.stringify(pickemEvents)); }, [pickemEvents]);
   useEffect(() => { localStorage.setItem('user-picks', JSON.stringify(userPicks)); }, [userPicks]);
 
+  // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗДЕСЬ ---
   const uploadPlayerImage = async (file) => {
     if (!file) return null;
     const fileExt = file.name.split('.').pop();
     const fileName = `${uuidv4()}.${fileExt}`;
     const filePath = fileName;
+
     const { error } = await supabase.storage.from('player_avatars').upload(filePath, file);
     if (error) {
       console.error('Ошибка загрузки изображения:', error);
       return null;
     }
+
+    // Эта строка получает ПОЛНУЮ ПУБЛИЧНУЮ ССЫЛКУ
     const { data } = supabase.storage.from('player_avatars').getPublicUrl(filePath);
+    
+    // И мы возвращаем именно ее!
     return data.publicUrl;
   };
 
   const handleAddPlayer = async (playerData, imageFile) => {
     const imageUrl = await uploadPlayerImage(imageFile);
-    // delete playerData.photoUrl; // <-- ЭТА СТРОКА УДАЛЕНА
     delete playerData.image;
     const newPlayerData = { ...playerData, id: uuidv4(), clicks: 0, image_url: imageUrl };
     const { data, error } = await supabase.from('players').insert(newPlayerData).select().single();
@@ -78,7 +83,6 @@ function App() {
     if (imageFile) {
       imageUrl = await uploadPlayerImage(imageFile);
     }
-    // delete updatedPlayerData.photoUrl; // <-- ЭТА СТРОКА УДАЛЕНА
     delete updatedPlayerData.image;
     const finalPlayerData = { ...updatedPlayerData, image_url: imageUrl };
     const { data, error } = await supabase.from('players').update(finalPlayerData).eq('id', finalPlayerData.id).select().single();

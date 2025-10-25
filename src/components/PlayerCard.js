@@ -18,39 +18,58 @@ const statLabels = {
   }
 };
 
+// --- НАША НОВАЯ "УМНАЯ" ФУНКЦИЯ ---
+const getFullImageUrl = (imagePath) => {
+  // Если imagePath пустой или null, возвращаем null
+  if (!imagePath) {
+    return null;
+  }
+  // Если это уже полная ссылка, просто возвращаем ее
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  const supabaseProjectUrl = 'https://cerfqcoqvjueyalnrule.supabase.co'; 
+  
+  return `${supabaseProjectUrl}/storage/v1/object/public/player_avatars/${imagePath}`;
+};
+
+
 const PlayerCard = ({ player, onCardClick, isClickable = true }) => {
   const {
     ovr,
     game,
-    image_url, // <-- ИСПРАВЛЕНО (было photoUrl)
+    image_url,
     nickname,
     fullName,
     team,
     stats,
     rarity,
-    position, 
+    position,
   } = player;
 
-  const labels = game ? statLabels[game.toLowerCase()] : {}; // Добавлена проверка на существование game
+  const labels = game ? statLabels[game.toLowerCase()] : {};
 
   const handleCardClick = () => {
     if (isClickable && onCardClick) {
       onCardClick(player);
     }
   };
+  
+  // Используем нашу новую функцию для получения корректной ссылки
+  const finalImageUrl = getFullImageUrl(image_url);
 
   return (
-    <div 
+    <div
       className={`card ${rarity} ${isClickable ? 'card-clickable' : ''}`}
       onClick={handleCardClick}
     >
       <div className="card-top">
-        {/* ИСПРАВЛЕНО использование image_url вместо photoUrl */}
-        <img src={image_url || 'https://via.placeholder.com/300x250/1e1e2f/fff?text=No+Photo'} alt={nickname} className="player-photo" />
+        {/* Отображаем картинку по готовой ссылке или заглушку */}
+        <img src={finalImageUrl || 'https://via.placeholder.com/300x250/1e1e2f/fff?text=No+Photo'} alt={nickname} className="player-photo" />
         <div className="card-header">
           <div className="card-ovr">{ovr}</div>
           <div className="card-game">
-            {/* Добавлена проверка на существование game */}
             {game && game.toLowerCase() === 'dota' && position ? position.toUpperCase() : game ? game.toUpperCase() : ''}
           </div>
         </div>
@@ -60,12 +79,10 @@ const PlayerCard = ({ player, onCardClick, isClickable = true }) => {
         <h2 className="player-nickname">{nickname}</h2>
         <p className="player-info">{fullName} - {team}</p>
 
-        {/* Добавлена проверка на существование stats */}
         {stats && (
           <ul className="player-stats">
             {Object.entries(stats).map(([statName, statValue]) => (
               <li key={statName}>
-                {/* Добавлена проверка на существование labels[statName] */}
                 <span className="stat-name">{labels[statName] || statName}</span>
                 <span className="stat-value">{statValue}</span>
               </li>
