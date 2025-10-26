@@ -1,43 +1,45 @@
-// src/components/LoginPage.js
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient'; // Убедись, что путь до supabaseClient.js правильный
+import { supabase } from '../supabaseClient';
 
 function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(''); // Состояние для ошибки
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(''); // Сбрасываем ошибку при новой попытке
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
       });
       if (error) throw error;
-      // Если вход успешный, перенаправляем в админку
       navigate('/admin/cards');
     } catch (error) {
-      alert(error.error_description || error.message);
+      setError(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: '50px', textAlign: 'center' }}>
-      <h2>Вход в админ-панель</h2>
-      <form onSubmit={handleLogin} style={{ display: 'inline-block' }}>
+    <div className="login-page-container">
+      <form onSubmit={handleLogin} className="login-form">
+        <h2>Вход в админ-панель</h2>
+        
+        {error && <p className="login-error">{error}</p>}
+
         <input
           type="email"
           placeholder="Ваш email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{ display: 'block', margin: '10px auto' }}
         />
         <input
           type="password"
@@ -45,7 +47,6 @@ function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{ display: 'block', margin: '10px auto' }}
         />
         <button type="submit" disabled={loading}>
           {loading ? 'Входим...' : 'Войти'}

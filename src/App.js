@@ -9,6 +9,8 @@ import AdminPanel from './components/AdminPanel';
 import PlayerDetailPage from './components/PlayerDetailPage';
 import PickemPage from './components/pickem/PickemPage';
 import AdminPickemDashboard from './components/pickem/AdminPickemDashboard';
+import ShopPage from './components/ShopPage'; // <-- ИМПОРТ
+import AdminPacks from './components/AdminPacks'; // <-- ИМПОРТ
 
 import './styles/App.css';
 import './styles/FilterControls.css';
@@ -17,6 +19,12 @@ function App() {
   const [session, setSession] = useState(null);
   const [loadingApp, setLoadingApp] = useState(true);
   const [players, setPlayers] = useState([]);
+
+  // --- НОВОЕ СОСТОЯНИЕ ДЛЯ МАГАЗИНА ---
+  const [packs, setPacks] = useState(() => JSON.parse(localStorage.getItem('packs')) || []);
+  const [userCoins, setUserCoins] = useState(() => parseInt(localStorage.getItem('userCoins')) || 5000);
+  const [userCollection, setUserCollection] = useState(() => JSON.parse(localStorage.getItem('userCollection')) || []);
+  
   const [pickemEvents, setPickemEvents] = useState(() => JSON.parse(localStorage.getItem('pickem-events')) || []);
   const [userPicks, setUserPicks] = useState(() => JSON.parse(localStorage.getItem('user-picks')) || {});
   const [sortBy, setSortBy] = useState('popularity');
@@ -43,10 +51,14 @@ function App() {
     return () => subscription.unsubscribe();
   }, [fetchPlayers]);
 
+  // --- USEEFFECT ДЛЯ СОХРАНЕНИЯ ДАННЫХ МАГАЗИНА ---
+  useEffect(() => { localStorage.setItem('packs', JSON.stringify(packs)); }, [packs]);
+  useEffect(() => { localStorage.setItem('userCoins', userCoins); }, [userCoins]);
+  useEffect(() => { localStorage.setItem('userCollection', JSON.stringify(userCollection)); }, [userCollection]);
+
   useEffect(() => { localStorage.setItem('pickem-events', JSON.stringify(pickemEvents)); }, [pickemEvents]);
   useEffect(() => { localStorage.setItem('user-picks', JSON.stringify(userPicks)); }, [userPicks]);
 
-  // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗДЕСЬ ---
   const uploadPlayerImage = async (file) => {
     if (!file) return null;
     const fileExt = file.name.split('.').pop();
@@ -58,11 +70,7 @@ function App() {
       console.error('Ошибка загрузки изображения:', error);
       return null;
     }
-
-    // Эта строка получает ПОЛНУЮ ПУБЛИЧНУЮ ССЫЛКУ
     const { data } = supabase.storage.from('player_avatars').getPublicUrl(filePath);
-    
-    // И мы возвращаем именно ее!
     return data.publicUrl;
   };
 
@@ -120,6 +128,38 @@ function App() {
     handleCardClick(player);
     navigate(`/player/${player.id}`);
   };
+  
+  // --- НОВЫЕ ФУНКЦИИ ДЛЯ УПРАВЛЕНИЯ ПАКАМИ ---
+  const handleAddPack = (packData) => setPacks(prev => [...prev, packData]);
+  const handleUpdatePack = (packData) => setPacks(prev => prev.map(p => p.id === packData.id ? packData : p));
+  const handleDeletePack = (packId) => setPacks(prev => prev.filter(p => p.id !== packId));
+
+  const handleOpenPack = (packId) => {
+    const pack = packs.find(p => p.id === packId);
+    if (!pack || userCoins < pack.price) {
+      return null;
+    }
+
+    // Списываем коины
+    setUserCoins(prev => prev - pack.price);
+
+    // Логика получения карточек
+    const pool = players.filter(p => pack.playerPool.includes(p.id));
+    if (pool.length < pack.cardsInPack) {
+      console.error("В пуле меньше игроков, чем должно быть в паке!");
+      return [];
+    }
+
+    // Перемешиваем и берем нужное количество
+    const shuffled = pool.sort(() => 0.5 - Math.random());
+    const revealedCards = shuffled.slice(0, pack.cardsInPack);
+    
+    // Добавляем в коллекцию (просто для примера)
+    setUserCollection(prev => [...prev, ...revealedCards]);
+    
+    return revealedCards;
+  };
+  
 
   const handleAddEvent = (title) => setPickemEvents([...pickemEvents, { id: uuidv4(), title, matches: [] }]);
   const handleDeleteEvent = (id) => setPickemEvents(pickemEvents.filter(e => e.id !== id));
@@ -183,21 +223,30 @@ function App() {
         <nav className="main-nav">
           {isAnyAdminView && session ? (
             <>
-              <NavLink to="/admin/cards" className={getNavLinkClass}>Админка: Карточки</NavLink>
-              <NavLink to="/admin/pickem" className={getNavLinkClass}>Админка: Pick'em</NavLink>
+              <NavLink to="/admin/cards" className={getNavLinkClass}>Карточки</NavLink>
+              <NavLink to="/admin/packs" className={getNavLinkClass}>Паки</NavLink>
+              <NavLink to="/admin/pickem" className={getNavLinkClass}>Pick'em</NavLink>
             </>
           ) : (
             <>
               <NavLink to="/" end className={getNavLinkClass}>Карточки</NavLink>
+              <NavLink to="/shop" className={getNavLinkClass}>Магазин</NavLink>
               <NavLink to="/pickem" className={getNavLinkClass}>Pick'em</NavLink>
             </>
           )}
         </nav>
-        {session ? (
-          <button className="admin-toggle-button" onClick={handleLogout}>Выйти</button>
-        ) : (
-          <button className="admin-toggle-button" onClick={() => navigate('/login')}>Войти</button>
-        )}
+         <div className="header-right">
+            {!isAnyAdminView && (
+              <div className="user-coins">
+                {userCoins} коинов
+              </div>
+            )}
+            {session ? (
+              <button className="admin-toggle-button" onClick={handleLogout}>Выйти</button>
+            ) : (
+              <NavLink to="/login" className="admin-toggle-button">Войти</NavLink>
+            )}
+        </div>
       </header>
       <main className="main-content">
         <Routes>
@@ -224,9 +273,11 @@ function App() {
             </>
           } />
           <Route path="/player/:playerId" element={<PlayerDetailWrapper />} />
+          <Route path="/shop" element={<ShopPage packs={packs} userCoins={userCoins} onOpenPack={handleOpenPack} />} />
           <Route path="/pickem" element={<PickemPage events={pickemEvents} userPicks={userPicks} onPick={handleUserPick} />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin/cards" element={session ? <AdminPanel players={players} onAddPlayer={handleAddPlayer} onUpdatePlayer={handleUpdatePlayer} onDeletePlayer={handleDeletePlayer} onReorderPlayers={handleReorderPlayers} /> : <LoginPage />} />
+          <Route path="/admin/packs" element={session ? <AdminPacks packs={packs} players={players} onAddPack={handleAddPack} onUpdatePack={handleUpdatePack} onDeletePack={handleDeletePack} /> : <LoginPage />} />
           <Route path="/admin/pickem" element={session ? <AdminPickemDashboard events={pickemEvents} onAddEvent={handleAddEvent} onDeleteEvent={handleDeleteEvent} onSaveMatch={handleSaveMatch} onDeleteMatch={handleDeleteMatch} /> : <LoginPage />} />
         </Routes>
       </main>

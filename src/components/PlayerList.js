@@ -1,18 +1,19 @@
 import React from 'react';
 import PlayerCard from './PlayerCard';
-import './PlayerList.css';
-import { Link } from 'react-router-dom';
+import '../styles/PlayerList.css'; // Обновленный CSS будет ниже
 
-const PlayerList = ({ players, onCardClick }) => {
+// Больше нет Link, т.к. навигация происходит в App.js через onPlayerSelect
+const PlayerList = ({ players, onPlayerSelect }) => {
   return (
     <div className="player-list-container">
       {players.length === 0 ? (
         <p>Карточки игроков не найдены.</p>
       ) : (
         players.map(player => (
-          <Link key={player.id} to={`/player/${player.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <PlayerCard player={player} onCardClick={onCardClick} />
-          </Link>
+          // Обертка для клика, передаем вызов в App.js
+          <div key={player.id} className="player-card-link-wrapper" onClick={() => onPlayerSelect(player)}>
+            <PlayerCard player={player} />
+          </div>
         ))
       )}
     </div>

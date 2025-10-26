@@ -1,9 +1,9 @@
 .filter-container {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 24px;
-  padding: 16px 24px;
+  flex-wrap: wrap; /* Позволяет переноситься на новую строку */
+  gap: 20px; /* Уменьшим gap для мобильных */
+  padding: 16px;
   margin-bottom: 30px;
   background-color: #2a2a3e;
   border-radius: 16px;
@@ -11,8 +11,8 @@
 }
 
 .search-wrapper {
-  flex: 1 1 300px; /* Позволяет полю расти и сжиматься, с базовой шириной 300px */
-  min-width: 250px; /* Гарантирует, что поле не станет слишком узким */
+  flex: 1 1 250px;
+  min-width: 200px;
 }
 
 .search-input {
@@ -25,7 +25,7 @@
   color: #f0f0f0;
   outline: none;
   transition: border-color 0.3s, box-shadow 0.3s;
-  box-sizing: border-box; /* Предотвращает проблемы с padding */
+  box-sizing: border-box;
 }
 
 .search-input::placeholder {
@@ -41,7 +41,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0; /* <-- ВОТ ГЛАВНОЕ ИСПРАВЛЕНИЕ! Запрещает группе сжиматься */
+  flex-wrap: wrap; /* Кнопки тоже могут переноситься */
 }
 
 .filter-label {

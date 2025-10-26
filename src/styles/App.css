@@ -21,8 +21,6 @@ body {
   padding: 15px 20px;
   border-bottom: 1px solid #4a4a68;
   margin-bottom: 25px;
-  
-  /* Этот блок кода закрепляет хедер вверху экрана при скролле */
   position: sticky;
   top: 0;
   background-color: #1e1e2f;
@@ -48,6 +46,7 @@ body {
   cursor: pointer;
   transition: all 0.3s;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .nav-button:hover {
@@ -61,6 +60,21 @@ body {
   box-shadow: 0 0 10px rgba(90, 103, 216, 0.5);
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-coins {
+  background-color: rgba(245, 166, 35, 0.2);
+  color: #f5a623;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  border: 1px solid #f5a623;
+}
+
 .admin-toggle-button {
   padding: 10px 20px;
   font-size: 16px;
@@ -71,6 +85,8 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .admin-toggle-button:hover {
@@ -80,4 +96,119 @@ body {
 .main-content {
   max-width: 1680px;
   margin: 0 auto;
+}
+
+/* --- СТИЛИ ДЛЯ СТРАНИЦЫ ВХОДА --- */
+.login-page-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 10vh;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #2a2a3e;
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid #4a4a68;
+}
+
+.login-form h2 {
+  text-align: center;
+  font-size: 28px;
+  color: #f0f0f0;
+  margin: 0 0 10px 0;
+  font-weight: 500;
+}
+
+.login-form input {
+  background-color: #1e1e2f;
+  border: 1px solid #4a4a68;
+  color: #f0f0f0;
+  border-radius: 6px;
+  padding: 14px;
+  font-size: 16px;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: #5a67d8;
+}
+
+.login-form button {
+  background-color: #5a67d8;
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 8px;
+}
+
+.login-form button:hover:not(:disabled) {
+  background-color: #4c58b6;
+}
+
+.login-form button:disabled {
+  background-color: #6e6e80;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.login-error {
+  color: #ff4757;
+  background-color: rgba(255, 71, 87, 0.1);
+  border: 1px solid #ff4757;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* --- АДАПТИВНОСТЬ --- */
+
+/* Планшеты и маленькие ноутбуки */
+@media (max-width: 1024px) {
+  .App {
+    padding: 0 15px 15px 15px;
+  }
+}
+
+/* Планшеты */
+@media (max-width: 768px) {
+  .nav-button {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+  .admin-toggle-button {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+  .app-header {
+    padding: 10px 15px;
+  }
+}
+
+/* Мобильные телефоны */
+@media (max-width: 600px) {
+  .app-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .main-nav, .header-right {
+    justify-content: center;
+  }
+  .login-form {
+    padding: 25px;
+  }
 }

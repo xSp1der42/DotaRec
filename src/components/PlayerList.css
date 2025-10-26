@@ -1,9 +1,11 @@
 .player-list-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
+  display: grid;
+  /* Используем auto-fill, чтобы грид сам решал, сколько колонок уместить */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  justify-items: center; /* Центрируем карточки в их ячейках */
 }
+
 .player-card-link-wrapper {
   cursor: pointer;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
