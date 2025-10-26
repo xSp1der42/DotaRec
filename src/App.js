@@ -273,7 +273,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
           
-          {/* Админ-панель */}
+          {/* Админка */}
           <Route path="/admin" element={<ProtectedRoute />}>
               <Route path="cards" element={<AdminPanel players={players} onAddPlayer={handleAddPlayer} onUpdatePlayer={handleUpdatePlayer} onDeletePlayer={handleDeletePlayer} onReorderPlayers={handleReorderPlayers} />} />
               <Route path="packs" element={<AdminPacks packs={packs} players={players} onAddPack={(pack) => setPacks(prev => [...prev, pack])} onUpdatePack={(pack) => setPacks(prev => prev.map(p => p.id === pack.id ? pack : p))} onDeletePack={(id) => setPacks(prev => prev.filter(p => p.id !== id))} onAddCoins={handleAddCoins} />} />
