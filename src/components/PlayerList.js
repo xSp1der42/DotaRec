@@ -1,8 +1,9 @@
 import React from 'react';
 import PlayerCard from './PlayerCard';
-import '../styles/PlayerList.css'; // Обновленный CSS будет ниже
+// Убедитесь, что этот путь правильный!
+import '../styles/PlayerList.css'; 
 
-// Больше нет Link, т.к. навигация происходит в App.js через onPlayerSelect
+// Мы убрали Link из этого файла в прошлый раз, теперь навигация идет через onPlayerSelect
 const PlayerList = ({ players, onPlayerSelect }) => {
   return (
     <div className="player-list-container">
