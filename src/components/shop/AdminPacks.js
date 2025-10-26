@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+// ИЗМЕНЕНО: Путь к стилям стал ../styles/ так как мы теперь в папке shop
 import '../styles/AdminPacks.css';
 
-// ИЗМЕНЕНИЕ: Принимаем новый пропс onAddCoins
 const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onAddCoins }) => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [packToEdit, setPackToEdit] = useState(null);
   const [formData, setFormData] = useState({
     id: null, name: '', description: '', price: 100, cardsInPack: 3, playerPool: [],
   });
-  // ИЗМЕНЕНИЕ: Новое состояние для формы выдачи коинов
   const [coinsToAdd, setCoinsToAdd] = useState(1000);
 
   useEffect(() => {
@@ -69,7 +68,6 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onA
     handleCancel();
   };
 
-  // ИЗМЕНЕНИЕ: Новый обработчик для кнопки выдачи коинов
   const handleIssueCoins = (e) => {
     e.preventDefault();
     onAddCoins(coinsToAdd);
@@ -77,14 +75,13 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onA
 
   return (
     <div className="card-management-section">
-      {/* ИЗМЕНЕНИЕ: Добавлен блок для выдачи коинов */}
       <div className="admin-issue-coins">
         <h3>Выдать коины (себе)</h3>
         <form className="issue-coins-form" onSubmit={handleIssueCoins}>
           <input
             type="number"
             value={coinsToAdd}
-            onChange={(e) => setCoinsToAdd(e.target.value)}
+            onChange={(e) => setCoinsToAdd(Number(e.target.value))}
             min="1"
             placeholder="Количество коинов"
             required

@@ -41,14 +41,10 @@ const AdminPanel = ({ players, onAddPlayer, onUpdatePlayer, onDeletePlayer, onRe
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
-  // Теперь функция принимает ДВА аргумента: playerData и imageFile
   const handleSave = (playerData, imageFile) => {
     if (playerData.id) {
-      // И передает ДВА аргумента дальше
       onUpdatePlayer(playerData, imageFile);
     } else {
-      // И сюда тоже передает ДВА аргумента
       onAddPlayer(playerData, imageFile);
     }
     setIsFormVisible(false);

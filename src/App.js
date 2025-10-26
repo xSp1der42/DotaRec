@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid'; // uuidv4 все еще нужен для других вещей, например, паков
+import { v4 as uuidv4 } from 'uuid';
 import { Routes, Route, NavLink, useNavigate, useLocation, useParams } from 'react-router-dom';
 
 import { supabase } from './supabaseClient';
@@ -9,8 +9,10 @@ import AdminPanel from './components/AdminPanel';
 import PlayerDetailPage from './components/PlayerDetailPage';
 import PickemPage from './components/pickem/PickemPage';
 import AdminPickemDashboard from './components/pickem/AdminPickemDashboard';
-import ShopPage from './components/ShopPage';
-import AdminPacks from './components/AdminPacks';
+// ИЗМЕНЕНО: Путь к ShopPage теперь ведет в папку shop
+import ShopPage from './components/shop/ShopPage';
+// ИЗМЕНЕНО: Путь к AdminPacks теперь ведет в папку shop
+import AdminPacks from './components/shop/AdminPacks';
 
 import './styles/App.css';
 import './styles/FilterControls.css';
@@ -81,33 +83,24 @@ function App() {
     return data.publicUrl;
   };
 
-  // --- ВОТ ГЛАВНОЕ ИСПРАВЛЕНИЕ ---
   const handleAddPlayer = async (playerData, imageFile) => {
     const imageUrl = await uploadPlayerImage(imageFile);
-    // Удаляем свойство 'image', если оно пришло из формы
     delete playerData.image;
-    // Удаляем id, т.к. база данных сгенерирует его сама
     delete playerData.id; 
-
-    // Создаем объект для вставки БЕЗ id
     const newPlayerData = { 
         ...playerData, 
         clicks: 0, 
         image_url: imageUrl 
     };
-
-    // Вставляем данные и просим Supabase вернуть созданную запись
     const { data, error } = await supabase
       .from('players')
       .insert(newPlayerData)
       .select()
       .single();
-
     if (error) {
       console.error('Ошибка при добавлении игрока:', error);
       alert(`Не удалось создать карточку: ${error.message}`);
     } else if (data) {
-      // Обновляем состояние с данными, которые вернула база (включая сгенерированный id)
       setPlayers(prev => [...prev, data]);
     }
   };
@@ -214,7 +207,7 @@ function App() {
 
   const PlayerDetailWrapper = () => {
     const { playerId } = useParams();
-    const player = players.find(p => p.id === playerId);
+    const player = players.find(p => p.id.toString() === playerId);
     return player ? <PlayerDetailPage player={player} /> : <h2>Игрок не найден!</h2>;
   };
 

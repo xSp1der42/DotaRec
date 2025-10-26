@@ -1,6 +1,6 @@
-// src/components/CoinPurchasePanel.js
 import React from 'react';
-import '../styles/CoinPurchasePanel.css'; // Создадим этот CSS файл
+// ИЗМЕНЕНО: Путь к стилям теперь ../styles/
+import '../styles/CoinPurchasePanel.css';
 
 const coinPackages = [
   { amount: 1000, price: '100₽' },

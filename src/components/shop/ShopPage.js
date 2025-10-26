@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import PlayerCard from './PlayerCard';
-import CoinPurchasePanel from './CoinPurchasePanel'; // Импортируем новый компонент
+// ИЗМЕНЕНО: Путь к PlayerCard теперь ../ так как мы находимся в папке shop
+import PlayerCard from '../PlayerCard'; 
+// ИЗМЕНЕНО: Путь к CoinPurchasePanel теперь ./ так как они в одной папке
+import CoinPurchasePanel from './CoinPurchasePanel'; 
+// ИЗМЕНЕНО: Путь к стилям теперь ../styles/ так как мы поднялись на уровень выше
 import '../styles/ShopPage.css';
 
 // Модальное окно для отображения открытых карточек
@@ -26,7 +29,6 @@ const PackOpeningModal = ({ cards, onClose }) => {
   );
 };
 
-// ИЗМЕНЕНИЕ: Принимаем новый пропс onAddCoins
 const ShopPage = ({ packs, userCoins, onOpenPack, onAddCoins }) => {
   const [openedCards, setOpenedCards] = useState(null);
 
@@ -45,7 +47,6 @@ const ShopPage = ({ packs, userCoins, onOpenPack, onAddCoins }) => {
 
   return (
     <div className="shop-page">
-      {/* ИЗМЕНЕНИЕ: Рендерим панель пополнения баланса */}
       <CoinPurchasePanel onAddCoins={onAddCoins} />
       
       <h1>Магазин Паков</h1>
