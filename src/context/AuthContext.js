@@ -6,69 +6,43 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Загрузка начинается по умолчанию
 
   useEffect(() => {
-    const getSessionAndProfile = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-        
-        setSession(session);
+    // onAuthStateChange - это единый источник правды. Он срабатывает
+    // как минимум один раз при загрузке страницы с текущей сессией (или null).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setSession(session);
 
-        if (session?.user) {
-          const { data: userProfile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          // ИЗМЕНЕНИЕ: Мы теперь явно проверяем ошибку при загрузке профиля
-          if (profileError) {
-            console.error("Ошибка при загрузке профиля пользователя:", profileError);
-            setProfile(null); // Сбрасываем профиль в случае ошибки
-          } else {
-            setProfile(userProfile);
-          }
-        } else {
-          setProfile(null); // Если нет сессии, профиля тоже нет
-        }
-      } catch (error) {
-        // ИЗМЕНЕНИЕ: Ловим любые ошибки, которые могли произойти
-        console.error("Критическая ошибка в AuthProvider:", error);
-      } finally {
-        // ИЗМЕНЕНИЕ: Этот блок выполнится ВСЕГДА, даже если была ошибка.
-        // Это гарантирует, что ваше приложение не "зависнет" на загрузке.
-        setLoading(false);
-      }
-    };
+      if (session?.user) {
+        // Если есть сессия, пытаемся загрузить профиль пользователя
+        const { data: userProfile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
 
-    getSessionAndProfile();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        if (session?.user) {
-          // Повторно получаем профиль, чтобы данные были актуальны
-          const { data: userProfile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          if (error) {
-            console.error("Ошибка при обновлении профиля после изменения аутентификации:", error);
-          }
-          setProfile(userProfile || null);
-        } else {
+        if (error) {
+          console.error("Ошибка при загрузке профиля пользователя:", error);
           setProfile(null);
+        } else {
+          setProfile(userProfile);
         }
+      } else {
+        // Если сессии нет, то и профиля нет
+        setProfile(null);
       }
-    );
+      
+      // ВАЖНО: Этот код выполнится в любом случае (успех, ошибка, нет сессии),
+      // гарантируя, что вечная загрузка невозможна.
+      setLoading(false);
+    });
 
+    // Эта функция вызывается, когда компонент "умирает", чтобы отписаться от слушателя
     return () => {
-      authListener.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Пустой массив зависимостей означает, что этот эффект запустится только один раз
 
   const updateProfile = async (updates) => {
     if (!profile) return null;
@@ -99,9 +73,6 @@ export const AuthProvider = ({ children }) => {
     isAdmin: profile?.role === 'admin',
   };
 
-  // ИЗМЕНЕНИЕ: Убрали !loading из условия, теперь компонент сам решает,
-  // показывать загрузчик или нет. Это более гибко.
-  // Защита от рендера теперь внутри самого App через проверку loading.
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
