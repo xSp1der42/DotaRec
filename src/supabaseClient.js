@@ -1,11 +1,17 @@
+// src/supabaseClient.js
+
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
 
-// Проверка, что ключи загрузились из .env.local
+// ----- ВОТ ЭТИ ДВЕ СТРОКИ -----
+console.log("Supabase URL from env:", supabaseUrl ? "Loaded" : "!!! NOT LOADED !!!");
+console.log("Supabase Key from env:", supabaseAnonKey ? "Loaded" : "!!! NOT LOADED !!!");
+// ------------------------------------
+
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Supabase URL or Anon Key is missing. Make sure you have a .env.local file with REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY");
+  throw new Error("Supabase URL or Anon Key is missing.");
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
