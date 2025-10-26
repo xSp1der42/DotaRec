@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'; // uuidv4 все еще нужен для других вещей, например, паков
 import { Routes, Route, NavLink, useNavigate, useLocation, useParams } from 'react-router-dom';
 
 import { supabase } from './supabaseClient';
@@ -58,7 +58,6 @@ function App() {
   useEffect(() => { localStorage.setItem('pickem-events', JSON.stringify(pickemEvents)); }, [pickemEvents]);
   useEffect(() => { localStorage.setItem('user-picks', JSON.stringify(userPicks)); }, [userPicks]);
 
-  // --- ИЗМЕНЕНИЕ: ДОБАВЛЕНА ФУНКЦИЯ ДЛЯ ПОПОЛНЕНИЯ КОИНОВ ---
   const handleAddCoins = (amount) => {
     const numericAmount = parseInt(amount, 10);
     if (isNaN(numericAmount) || numericAmount <= 0) {
@@ -82,13 +81,35 @@ function App() {
     return data.publicUrl;
   };
 
+  // --- ВОТ ГЛАВНОЕ ИСПРАВЛЕНИЕ ---
   const handleAddPlayer = async (playerData, imageFile) => {
     const imageUrl = await uploadPlayerImage(imageFile);
+    // Удаляем свойство 'image', если оно пришло из формы
     delete playerData.image;
-    const newPlayerData = { ...playerData, id: uuidv4(), clicks: 0, image_url: imageUrl };
-    const { data, error } = await supabase.from('players').insert(newPlayerData).select().single();
-    if (error) console.error('Ошибка при добавлении игрока:', error);
-    else if (data) setPlayers(prev => [...prev, data]);
+    // Удаляем id, т.к. база данных сгенерирует его сама
+    delete playerData.id; 
+
+    // Создаем объект для вставки БЕЗ id
+    const newPlayerData = { 
+        ...playerData, 
+        clicks: 0, 
+        image_url: imageUrl 
+    };
+
+    // Вставляем данные и просим Supabase вернуть созданную запись
+    const { data, error } = await supabase
+      .from('players')
+      .insert(newPlayerData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Ошибка при добавлении игрока:', error);
+      alert(`Не удалось создать карточку: ${error.message}`);
+    } else if (data) {
+      // Обновляем состояние с данными, которые вернула база (включая сгенерированный id)
+      setPlayers(prev => [...prev, data]);
+    }
   };
 
   const handleUpdatePlayer = async (updatedPlayerData, imageFile) => {
@@ -97,14 +118,22 @@ function App() {
     delete updatedPlayerData.image;
     const finalPlayerData = { ...updatedPlayerData, image_url: imageUrl };
     const { data, error } = await supabase.from('players').update(finalPlayerData).eq('id', finalPlayerData.id).select().single();
-    if (error) console.error('Ошибка при обновлении игрока:', error);
-    else if (data) setPlayers(prev => prev.map(p => (p.id === data.id ? data : p)));
+    if (error) {
+        console.error('Ошибка при обновлении игрока:', error);
+        alert(`Не удалось обновить карточку: ${error.message}`);
+    } else if (data) {
+        setPlayers(prev => prev.map(p => (p.id === data.id ? data : p)));
+    }
   };
 
   const handleDeletePlayer = async (playerId) => {
     const { error } = await supabase.from('players').delete().eq('id', playerId);
-    if (error) console.error('Ошибка при удалении игрока:', error);
-    else setPlayers(prevPlayers => prevPlayers.filter(p => p.id !== playerId));
+    if (error) {
+        console.error('Ошибка при удалении игрока:', error);
+        alert(`Не удалось удалить карточку: ${error.message}`);
+    } else {
+        setPlayers(prevPlayers => prevPlayers.filter(p => p.id !== playerId));
+    }
   };
 
   const handleReorderPlayers = (reorderedPlayers) => setPlayers(reorderedPlayers);
@@ -226,12 +255,10 @@ function App() {
         <Routes>
           <Route path="/" element={<><div className="filter-container"><div className="search-wrapper"><input type="text" placeholder="Поиск по нику или команде..." className="search-input" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div><div className="filter-group"><span className="filter-label">Сортировать:</span><button onClick={() => setSortBy('popularity')} className={`sort-button ${sortBy === 'popularity' ? 'active' : ''}`}>Популярность</button><button onClick={() => setSortBy('rating_desc')} className={`sort-button ${sortBy === 'rating_desc' ? 'active' : ''}`}>Рейтинг ↓</button><button onClick={() => setSortBy('rating_asc')} className={`sort-button ${sortBy === 'rating_asc' ? 'active' : ''}`}>Рейтинг ↑</button></div><div className="filter-group"><label htmlFor="team-select" className="filter-label">Команда:</label><select id="team-select" className="team-select" value={filterByTeam} onChange={(e) => setFilterByTeam(e.target.value)}>{uniqueTeams.map(team => (<option key={team} value={team}>{team}</option>))}</select></div></div><PlayerList players={filteredAndSortedPlayers} onPlayerSelect={handlePlayerSelect} /></>} />
           <Route path="/player/:playerId" element={<PlayerDetailWrapper />} />
-          {/* --- ИЗМЕНЕНИЕ: ПЕРЕДАЕМ onAddCoins В ShopPage --- */}
           <Route path="/shop" element={<ShopPage packs={packs} userCoins={userCoins} onOpenPack={handleOpenPack} onAddCoins={handleAddCoins} />} />
           <Route path="/pickem" element={<PickemPage events={pickemEvents} userPicks={userPicks} onPick={handleUserPick} />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin/cards" element={session ? <AdminPanel players={players} onAddPlayer={handleAddPlayer} onUpdatePlayer={handleUpdatePlayer} onDeletePlayer={handleDeletePlayer} onReorderPlayers={handleReorderPlayers} /> : <LoginPage />} />
-          {/* --- ИЗМЕНЕНИЕ: ПЕРЕДАЕМ onAddCoins В AdminPacks --- */}
           <Route path="/admin/packs" element={session ? <AdminPacks packs={packs} players={players} onAddPack={handleAddPack} onUpdatePack={handleUpdatePack} onDeletePack={handleDeletePack} onAddCoins={handleAddCoins} /> : <LoginPage />} />
           <Route path="/admin/pickem" element={session ? <AdminPickemDashboard events={pickemEvents} onAddEvent={handleAddEvent} onDeleteEvent={handleDeleteEvent} onSaveMatch={handleSaveMatch} onDeleteMatch={handleDeleteMatch} /> : <LoginPage />} />
         </Routes>
