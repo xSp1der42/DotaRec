@@ -2,13 +2,16 @@
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="/favicon.ico" />
+    <!-- Путь к иконке теперь просто абсолютный от корня. Vite поймет. -->
+    <link rel="icon" href="/favicon.ico" /> 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
       content="Cybersport Player Cards"
     />
+    <!-- manifest.json тоже будет доступен по абсолютному пути -->
+    <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -17,8 +20,8 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    
-    <!-- ИСПРАВЛЕНИЕ ЗДЕСЬ: Добавляем слэш в начало пути -->
-    <script type="module" src="/src/index.jsx"></script>
+
+    <!-- ЭТО САМЫЙ ВАЖНЫЙ МОМЕНТ! Точка входа для Vite -->
+    <script type="module" src="/src/index.jsx"></script> 
   </body>
 </html>
