@@ -14,8 +14,6 @@
   background: linear-gradient(145deg, #2c2c44, #242438);
   border-radius: 15px;
   padding: 0; 
-  /* ИЗМЕНЕНИЕ: Убираем margin, за отступы теперь отвечает gap в PlayerList */
-  /* margin: 15px; */
   width: 300px;
   height: 480px;
   display: flex;

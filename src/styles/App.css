@@ -1,12 +1,22 @@
+:root {
+  --bg-primary: #1a1a21;
+  --bg-secondary: #252530;
+  --bg-tertiary: #2c2c38;
+  --border-color: #3a3a4a;
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0a0;
+  --accent-primary: #00f2ea;
+  --accent-secondary: #ff4757;
+  --font-family: 'Roboto', sans-serif;
+}
+
 body {
   margin: 0;
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #1e1e2f;
-  color: #f0f0f0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .App {
@@ -18,79 +28,88 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
-  border-bottom: 1px solid #4a4a68;
-  margin-bottom: 25px;
+  padding: 15px 30px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 30px;
   position: sticky;
   top: 0;
-  background-color: #1e1e2f;
+  background-color: rgba(26, 26, 33, 0.85);
+  backdrop-filter: blur(10px);
   z-index: 1000;
 }
 
 .main-nav {
   display: flex;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  border: none;
+  gap: 15px;
 }
 
 .nav-button {
-  padding: 10px 25px;
+  padding: 10px 20px;
   font-size: 16px;
   font-weight: 500;
   border: none;
-  background-color: #2a2a3e;
-  color: #a9a9c9;
+  background-color: transparent;
+  color: var(--text-secondary);
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease-in-out;
   text-decoration: none;
   white-space: nowrap;
 }
 
 .nav-button:hover {
-  color: #fff;
-  background-color: #4a4a68;
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
 }
 
 .nav-button.active {
-  color: #fff;
-  background-color: #5a67d8;
-  box-shadow: 0 0 10px rgba(90, 103, 216, 0.5);
+  color: var(--accent-primary);
+  background-color: var(--bg-secondary);
+  font-weight: bold;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
 }
 
 .user-coins {
-  background-color: rgba(245, 166, 35, 0.2);
-  color: #f5a623;
+  background-color: rgba(0, 242, 234, 0.1);
+  color: var(--accent-primary);
   padding: 8px 15px;
   border-radius: 8px;
   font-weight: bold;
-  border: 1px solid #f5a623;
+  border: 1px solid rgba(0, 242, 234, 0.3);
 }
 
-.admin-toggle-button {
+.admin-toggle-button, .login-button, .logout-button {
   padding: 10px 20px;
   font-size: 16px;
   font-weight: bold;
-  background-color: #ff4757;
-  color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.2s ease-in-out;
   text-decoration: none;
-  display: inline-block;
 }
 
+.admin-toggle-button {
+  background-color: var(--accent-secondary);
+  color: white;
+}
 .admin-toggle-button:hover {
   background-color: #e04050;
+  transform: translateY(-2px);
+}
+
+.login-button, .logout-button {
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
+}
+.login-button:hover, .logout-button:hover {
+  opacity: 0.9;
+  box-shadow: 0 0 15px rgba(0, 242, 234, 0.4);
 }
 
 .main-content {
@@ -98,117 +117,80 @@ body {
   margin: 0 auto;
 }
 
-/* --- СТИЛИ ДЛЯ СТРАНИЦЫ ВХОДА --- */
+/* LOGIN PAGE */
 .login-page-container {
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   padding-top: 10vh;
 }
-
 .login-form {
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  background-color: #2a2a3e;
+  background-color: var(--bg-secondary);
   padding: 40px;
   border-radius: 12px;
-  border: 1px solid #4a4a68;
+  border: 1px solid var(--border-color);
 }
-
 .login-form h2 {
-  text-align: center;
-  font-size: 28px;
-  color: #f0f0f0;
+  font-size: 2em;
+  color: var(--text-primary);
   margin: 0 0 10px 0;
   font-weight: 500;
 }
-
 .login-form input {
-  background-color: #1e1e2f;
-  border: 1px solid #4a4a68;
-  color: #f0f0f0;
-  border-radius: 6px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 8px;
   padding: 14px;
   font-size: 16px;
 }
-
 .login-form input:focus {
   outline: none;
-  border-color: #5a67d8;
+  border-color: var(--accent-primary);
 }
-
 .login-form button {
-  background-color: #5a67d8;
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
   border: none;
-  color: #fff;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 14px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 8px;
 }
-
-.login-form button:hover:not(:disabled) {
-  background-color: #4c58b6;
-}
-
-.login-form button:disabled {
-  background-color: #6e6e80;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
 .login-error {
   color: #ff4757;
   background-color: rgba(255, 71, 87, 0.1);
-  border: 1px solid #ff4757;
   padding: 10px;
   border-radius: 6px;
   text-align: center;
-  font-size: 14px;
+}
+.login-message {
+  color: #2ed573;
+  background-color: rgba(46, 213, 115, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+}
+.auth-toggle {
+  color: var(--accent-primary);
+  cursor: pointer;
+  text-align: center;
+  margin-top: 10px;
+}
+.auth-toggle:hover {
+  text-decoration: underline;
 }
 
-/* --- АДАПТИВНОСТЬ --- */
-
-/* Планшеты и маленькие ноутбуки */
-@media (max-width: 1024px) {
-  .App {
-    padding: 0 15px 15px 15px;
-  }
-}
-
-/* Планшеты */
 @media (max-width: 768px) {
-  .nav-button {
-    padding: 8px 15px;
-    font-size: 14px;
-  }
-  .admin-toggle-button {
-    padding: 8px 15px;
-    font-size: 14px;
-  }
-  .app-header {
-    padding: 10px 15px;
-  }
-}
-
-/* Мобильные телефоны */
-@media (max-width: 600px) {
   .app-header {
     flex-direction: column;
-    gap: 10px;
-    align-items: stretch;
-  }
-  .main-nav, .header-right {
-    justify-content: center;
-  }
-  .login-form {
-    padding: 25px;
+    gap: 15px;
+    padding: 15px;
   }
 }

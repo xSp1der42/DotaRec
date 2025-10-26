@@ -1,0 +1,66 @@
+.profile-page {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.profile-header {
+  background-color: #252530;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 40px;
+  border: 1px solid #3a3a4a;
+}
+
+.profile-header h1 {
+  margin: 0;
+  font-size: 2.2em;
+  color: #f0f0f0;
+}
+
+.profile-info {
+  display: flex;
+  gap: 25px;
+  margin-top: 15px;
+  font-size: 1.1em;
+  color: #c0c0c0;
+}
+
+.profile-coins {
+  font-weight: bold;
+  color: #00f2ea;
+}
+
+.profile-page h2 {
+  font-size: 1.8em;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #4f4f5e;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  justify-items: center;
+}
+
+.empty-inventory-message {
+  font-size: 1.2em;
+  color: #a0a0a0;
+  text-align: center;
+  margin-top: 50px;
+  padding: 30px;
+  background-color: #2c2c38;
+  border-radius: 10px;
+}
+
+.empty-inventory-message a {
+  color: #00f2ea;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.empty-inventory-message a:hover {
+  text-decoration: underline;
+}
