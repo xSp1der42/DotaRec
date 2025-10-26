@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-// ИЗМЕНЕНО: Путь к стилям стал ../styles/ так как мы теперь в папке shop
+// ИСПРАВЛЕНО: Путь к стилям должен быть ../styles/
 import '../styles/AdminPacks.css';
 
 const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onAddCoins }) => {

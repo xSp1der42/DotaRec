@@ -9,9 +9,7 @@ import AdminPanel from './components/AdminPanel';
 import PlayerDetailPage from './components/PlayerDetailPage';
 import PickemPage from './components/pickem/PickemPage';
 import AdminPickemDashboard from './components/pickem/AdminPickemDashboard';
-// ИЗМЕНЕНО: Путь к ShopPage теперь ведет в папку shop
 import ShopPage from './components/shop/ShopPage';
-// ИЗМЕНЕНО: Путь к AdminPacks теперь ведет в папку shop
 import AdminPacks from './components/shop/AdminPacks';
 
 import './styles/App.css';
@@ -207,6 +205,7 @@ function App() {
 
   const PlayerDetailWrapper = () => {
     const { playerId } = useParams();
+    // ИСПРАВЛЕНО: Сравниваем ID как строки, чтобы избежать ошибки типов "число !== строка"
     const player = players.find(p => p.id.toString() === playerId);
     return player ? <PlayerDetailPage player={player} /> : <h2>Игрок не найден!</h2>;
   };
