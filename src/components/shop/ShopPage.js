@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-// ИЗМЕНЕНО: Путь к PlayerCard теперь ../ так как мы находимся в папке shop
+// Убедись, что файл PlayerCard.js называется именно так (с большой P и C)
 import PlayerCard from '../PlayerCard'; 
-// ИЗМЕНЕНО: Путь к CoinPurchasePanel теперь ./ так как они в одной папке
+// Убедись, что файл CoinPurchasePanel.js называется именно так
 import CoinPurchasePanel from './CoinPurchasePanel'; 
-// ИЗМЕНЕНО: Путь к стилям теперь ../styles/ так как мы поднялись на уровень выше
+// ВАЖНО: Убедись, что папка называется 'styles' (маленькие буквы) и файл 'ShopPage.css'
 import '../styles/ShopPage.css';
 
 // Модальное окно для отображения открытых карточек
