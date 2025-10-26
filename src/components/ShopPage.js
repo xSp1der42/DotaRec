@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PlayerCard from './PlayerCard';
+import CoinPurchasePanel from './CoinPurchasePanel'; // Импортируем новый компонент
 import '../styles/ShopPage.css';
 
 // Модальное окно для отображения открытых карточек
@@ -25,8 +26,8 @@ const PackOpeningModal = ({ cards, onClose }) => {
   );
 };
 
-
-const ShopPage = ({ packs, userCoins, onOpenPack }) => {
+// ИЗМЕНЕНИЕ: Принимаем новый пропс onAddCoins
+const ShopPage = ({ packs, userCoins, onOpenPack, onAddCoins }) => {
   const [openedCards, setOpenedCards] = useState(null);
 
   const handleOpenPackClick = (pack) => {
@@ -44,6 +45,9 @@ const ShopPage = ({ packs, userCoins, onOpenPack }) => {
 
   return (
     <div className="shop-page">
+      {/* ИЗМЕНЕНИЕ: Рендерим панель пополнения баланса */}
+      <CoinPurchasePanel onAddCoins={onAddCoins} />
+      
       <h1>Магазин Паков</h1>
       {packs.length > 0 ? (
          <div className="packs-container">
@@ -52,7 +56,7 @@ const ShopPage = ({ packs, userCoins, onOpenPack }) => {
               <h3>{pack.name}</h3>
               <p className="pack-description">{pack.description}</p>
               <div className="pack-footer">
-                <span className="pack-price">{pack.price} коинов</span>
+                <span className="pack-price">{pack.price.toLocaleString('ru-RU')} коинов</span>
                 <button
                   onClick={() => handleOpenPackClick(pack)}
                   disabled={userCoins < pack.price}

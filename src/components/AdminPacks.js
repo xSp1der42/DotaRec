@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import '../styles/AdminPacks.css'; // Мы создадим этот CSS файл
+import '../styles/AdminPacks.css';
 
-const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack }) => {
+// ИЗМЕНЕНИЕ: Принимаем новый пропс onAddCoins
+const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onAddCoins }) => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [packToEdit, setPackToEdit] = useState(null);
   const [formData, setFormData] = useState({
-    id: null,
-    name: '',
-    description: '',
-    price: 100,
-    cardsInPack: 3,
-    playerPool: [],
+    id: null, name: '', description: '', price: 100, cardsInPack: 3, playerPool: [],
   });
+  // ИЗМЕНЕНИЕ: Новое состояние для формы выдачи коинов
+  const [coinsToAdd, setCoinsToAdd] = useState(1000);
 
   useEffect(() => {
     if (packToEdit) {
@@ -32,14 +30,7 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack }) =
   }, [packToEdit]);
 
   const resetForm = () => {
-    setFormData({
-      id: null,
-      name: '',
-      description: '',
-      price: 100,
-      cardsInPack: 3,
-      playerPool: [],
-    });
+    setFormData({ id: null, name: '', description: '', price: 100, cardsInPack: 3, playerPool: [] });
   };
 
   const handleAddNew = () => {
@@ -49,9 +40,7 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack }) =
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleEdit = (pack) => {
-    setPackToEdit(pack);
-  };
+  const handleEdit = (pack) => setPackToEdit(pack);
   
   const handleCancel = () => {
     setIsFormVisible(false);
@@ -75,16 +64,37 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack }) =
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.id) {
-      onUpdatePack(formData);
-    } else {
-      onAddPack({ ...formData, id: uuidv4() });
-    }
+    if (formData.id) onUpdatePack(formData);
+    else onAddPack({ ...formData, id: uuidv4() });
     handleCancel();
+  };
+
+  // ИЗМЕНЕНИЕ: Новый обработчик для кнопки выдачи коинов
+  const handleIssueCoins = (e) => {
+    e.preventDefault();
+    onAddCoins(coinsToAdd);
   };
 
   return (
     <div className="card-management-section">
+      {/* ИЗМЕНЕНИЕ: Добавлен блок для выдачи коинов */}
+      <div className="admin-issue-coins">
+        <h3>Выдать коины (себе)</h3>
+        <form className="issue-coins-form" onSubmit={handleIssueCoins}>
+          <input
+            type="number"
+            value={coinsToAdd}
+            onChange={(e) => setCoinsToAdd(e.target.value)}
+            min="1"
+            placeholder="Количество коинов"
+            required
+          />
+          <button type="submit" className="add-item-btn">
+            Выдать
+          </button>
+        </form>
+      </div>
+
       <h2>Управление Паками</h2>
       {!isFormVisible && (
         <button onClick={handleAddNew} className="add-player-btn">
@@ -113,7 +123,6 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack }) =
                 <input type="number" name="cardsInPack" value={formData.cardsInPack} onChange={handleChange} min="1" required />
             </div>
           </div>
-
           <h3>Игроки в паке ({formData.playerPool.length} выбрано)</h3>
           <p className="pool-notice">Выберите всех игроков, которые могут выпасть из этого пака. Их должно быть больше или равно количеству карточек в паке.</p>
           <div className="player-pool-selector">
@@ -127,7 +136,6 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack }) =
               </div>
             ))}
           </div>
-
           <div className="form-buttons">
             <button type="submit" className="save-btn">Сохранить</button>
             <button type="button" onClick={handleCancel} className="cancel-btn">Отмена</button>
@@ -140,7 +148,7 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack }) =
         {packs.map(pack => (
           <div key={pack.id} className="player-item-admin pack-item-admin">
             <div className="info">
-              <strong>{pack.name}</strong> ({pack.price} коинов) - {pack.playerPool.length} игроков в пуле
+              <strong>{pack.name}</strong> ({pack.price.toLocaleString('ru-RU')} коинов) - {pack.playerPool.length} игроков в пуле
             </div>
             <div className="actions">
               <button onClick={() => handleEdit(pack)} className="edit-btn">Редактировать</button>
