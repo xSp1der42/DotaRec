@@ -10,22 +10,37 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const getSessionAndProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        
+        setSession(session);
 
-      if (session?.user) {
-        const { data: userProfile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        if (error) {
-          console.error("Error fetching profile:", error);
+        if (session?.user) {
+          const { data: userProfile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          // ИЗМЕНЕНИЕ: Мы теперь явно проверяем ошибку при загрузке профиля
+          if (profileError) {
+            console.error("Ошибка при загрузке профиля пользователя:", profileError);
+            setProfile(null); // Сбрасываем профиль в случае ошибки
+          } else {
+            setProfile(userProfile);
+          }
         } else {
-          setProfile(userProfile);
+          setProfile(null); // Если нет сессии, профиля тоже нет
         }
+      } catch (error) {
+        // ИЗМЕНЕНИЕ: Ловим любые ошибки, которые могли произойти
+        console.error("Критическая ошибка в AuthProvider:", error);
+      } finally {
+        // ИЗМЕНЕНИЕ: Этот блок выполнится ВСЕГДА, даже если была ошибка.
+        // Это гарантирует, что ваше приложение не "зависнет" на загрузке.
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getSessionAndProfile();
@@ -34,15 +49,16 @@ export const AuthProvider = ({ children }) => {
       async (_event, session) => {
         setSession(session);
         if (session?.user) {
+          // Повторно получаем профиль, чтобы данные были актуальны
           const { data: userProfile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
           if (error) {
-            console.error("Error fetching profile on auth change:", error);
+            console.error("Ошибка при обновлении профиля после изменения аутентификации:", error);
           }
-          setProfile(userProfile);
+          setProfile(userProfile || null);
         } else {
           setProfile(null);
         }
@@ -55,7 +71,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const updateProfile = async (updates) => {
-    if (!profile) return;
+    if (!profile) return null;
 
     try {
       const { data, error } = await supabase
@@ -70,7 +86,7 @@ export const AuthProvider = ({ children }) => {
       setProfile(data);
       return data;
     } catch (error) {
-      console.error('Error updating profile:', error.message);
+      console.error('Ошибка при обновлении профиля:', error.message);
       return null;
     }
   };
@@ -83,7 +99,10 @@ export const AuthProvider = ({ children }) => {
     isAdmin: profile?.role === 'admin',
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  // ИЗМЕНЕНИЕ: Убрали !loading из условия, теперь компонент сам решает,
+  // показывать загрузчик или нет. Это более гибко.
+  // Защита от рендера теперь внутри самого App через проверку loading.
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
