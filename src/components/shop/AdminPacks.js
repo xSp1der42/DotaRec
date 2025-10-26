@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 // ВАЖНО: Убедись, что папка называется 'styles' и файл 'AdminPacks.css'
-import '../styles/AdminPacks.css';
+import '../../styles/AdminPacks.css';
 
 const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onAddCoins }) => {
   const [isFormVisible, setIsFormVisible] = useState(false);

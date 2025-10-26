@@ -4,7 +4,7 @@ import PlayerCard from '../PlayerCard';
 // Убедись, что файл CoinPurchasePanel.js называется именно так
 import CoinPurchasePanel from './CoinPurchasePanel'; 
 // ВАЖНО: Убедись, что папка называется 'styles' (маленькие буквы) и файл 'ShopPage.css'
-import '../styles/ShopPage.css';
+import '../../styles/ShopPage.css';
 
 // Модальное окно для отображения открытых карточек
 const PackOpeningModal = ({ cards, onClose }) => {

@@ -1,6 +1,6 @@
 import React from 'react';
 // ИЗМЕНЕНО: Путь к стилям теперь ../styles/
-import '../styles/CoinPurchasePanel.css';
+import '../../styles/CoinPurchasePanel.css';
 
 const coinPackages = [
   { amount: 1000, price: '100₽' },
