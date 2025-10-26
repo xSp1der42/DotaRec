@@ -20,15 +20,14 @@ import './styles/App.css';
 import './styles/FilterControls.css';
 
 function App() {
-  const { session, profile, isAdmin, updateProfile } = useAuth();
+  // ИЗМЕНЕНИЕ 1: Достаём `loading` из useAuth, чтобы знать, когда закончится проверка
+  const { session, profile, isAdmin, updateProfile, loading } = useAuth(); 
   const [players, setPlayers] = useState([]);
-  const [packs, setPacks] = useState(() => JSON.parse(localStorage.getItem('packs')) || []); // Паки пока оставим в localStorage для простоты
+  const [packs, setPacks] = useState(() => JSON.parse(localStorage.getItem('packs')) || []);
   
-  // Pick'em состояние
   const [pickemEvents, setPickemEvents] = useState([]);
   const [userPicks, setUserPicks] = useState({});
 
-  // Состояние фильтров
   const [sortBy, setSortBy] = useState('popularity');
   const [filterByTeam, setFilterByTeam] = useState('All Teams');
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,7 +35,6 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Загрузка публичных данных
   const fetchPublicData = useCallback(async () => {
     const { data: playersData, error: playersError } = await supabase.from('players').select('*');
     if (playersError) console.error('Ошибка при загрузке игроков:', playersError);
@@ -48,10 +46,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetchPublicData();
-  }, [fetchPublicData]);
+    // ИЗМЕНЕНИЕ 2: Запускаем загрузку данных только ПОСЛЕ того, как проверка аутентификации завершилась
+    if (!loading) {
+      fetchPublicData();
+    }
+  }, [fetchPublicData, loading]); // Добавляем `loading` в массив зависимостей
 
-  // Загрузка данных пользователя (прогнозы)
   useEffect(() => {
     if (session?.user) {
       const fetchUserPicks = async () => {
@@ -76,7 +76,6 @@ function App() {
     }
   }, [session]);
   
-  // Сохранение паков в localStorage
   useEffect(() => { localStorage.setItem('packs', JSON.stringify(packs)); }, [packs]);
 
   const handleAddCoins = async (amount) => {
@@ -103,7 +102,7 @@ function App() {
       console.error('Ошибка загрузки изображения:', error);
       return null;
     }
-    return fileName; // Возвращаем только имя файла
+    return fileName;
   };
 
   const handleAddPlayer = async (playerData, imageFile) => {
@@ -164,7 +163,6 @@ function App() {
     return null;
   };
 
-  // --- ЛОГИКА PICK'EM ---
   const handleAddEvent = async (title) => {
     const { data, error } = await supabase.from('pickem_events').insert({ title, matches: [] }).select().single();
     if (error) console.error(error);
@@ -239,6 +237,11 @@ function App() {
   
   const getNavLinkClass = ({ isActive }) => "nav-button" + (isActive ? " active" : "");
   const handleLogout = async () => { await supabase.auth.signOut(); navigate('/'); };
+  
+  // ИЗМЕНЕНИЕ 3: Добавляем "экран загрузки", который не даст остальной части приложения отрендериться раньше времени.
+  if (loading) {
+    return <div style={{ textAlign: 'center', paddingTop: '50px' }}>Загрузка...</div>;
+  }
   
   return (
     <div className="App">
