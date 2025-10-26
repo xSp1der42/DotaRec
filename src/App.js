@@ -20,38 +20,51 @@ import './styles/App.css';
 import './styles/FilterControls.css';
 
 function App() {
-  // ИЗМЕНЕНИЕ 1: Достаём `loading` из useAuth, чтобы знать, когда закончится проверка
-  const { session, profile, isAdmin, updateProfile, loading } = useAuth(); 
+  // Достаём loading из useAuth, чтобы знать, когда закончится проверка аутентификации
+  const { session, profile, isAdmin, updateProfile, loading } = useAuth();
   const [players, setPlayers] = useState([]);
-  const [packs, setPacks] = useState(() => JSON.parse(localStorage.getItem('packs')) || []);
-  
+  const [packs, setPacks] = useState(() => {
+    try {
+      const savedPacks = localStorage.getItem('packs');
+      return savedPacks ? JSON.parse(savedPacks) : [];
+    } catch (error) {
+      console.error("Could not parse packs from localStorage", error);
+      return [];
+    }
+  });
+
   const [pickemEvents, setPickemEvents] = useState([]);
   const [userPicks, setUserPicks] = useState({});
 
   const [sortBy, setSortBy] = useState('popularity');
   const [filterByTeam, setFilterByTeam] = useState('All Teams');
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const navigate = useNavigate();
-  const location = useLocation();
 
+  const navigate = useNavigate();
+
+  // Загрузка данных, которые не зависят от пользователя
   const fetchPublicData = useCallback(async () => {
-    const { data: playersData, error: playersError } = await supabase.from('players').select('*');
-    if (playersError) console.error('Ошибка при загрузке игроков:', playersError);
-    else setPlayers(playersData || []);
-    
-    const { data: eventsData, error: eventsError } = await supabase.from('pickem_events').select('*');
-    if (eventsError) console.error('Ошибка при загрузке событий Pickem:', eventsError);
-    else setPickemEvents(eventsData || []);
+    try {
+        const { data: playersData, error: playersError } = await supabase.from('players').select('*');
+        if (playersError) throw playersError;
+        setPlayers(playersData || []);
+
+        const { data: eventsData, error: eventsError } = await supabase.from('pickem_events').select('*');
+        if (eventsError) throw eventsError;
+        setPickemEvents(eventsData || []);
+    } catch (error) {
+        console.error('Ошибка при загрузке публичных данных:', error);
+    }
   }, []);
 
+  // Запускаем загрузку данных только ПОСЛЕ того, как проверка аутентификации завершилась
   useEffect(() => {
-    // ИЗМЕНЕНИЕ 2: Запускаем загрузку данных только ПОСЛЕ того, как проверка аутентификации завершилась
     if (!loading) {
       fetchPublicData();
     }
-  }, [fetchPublicData, loading]); // Добавляем `loading` в массив зависимостей
+  }, [loading, fetchPublicData]); // Добавляем loading в массив зависимостей
 
+  // Загрузка данных, которые зависят от пользователя (его выборы в Pick'em)
   useEffect(() => {
     if (session?.user) {
       const fetchUserPicks = async () => {
@@ -59,7 +72,7 @@ function App() {
           .from('user_picks')
           .select('event_id, picks')
           .eq('user_id', session.user.id);
-        
+
         if (error) {
           console.error("Ошибка при загрузке прогнозов:", error);
         } else {
@@ -72,11 +85,15 @@ function App() {
       };
       fetchUserPicks();
     } else {
+      // Если пользователь не авторизован, сбрасываем его выборы
       setUserPicks({});
     }
   }, [session]);
-  
-  useEffect(() => { localStorage.setItem('packs', JSON.stringify(packs)); }, [packs]);
+
+  // Сохранение паков в localStorage при их изменении
+  useEffect(() => {
+    localStorage.setItem('packs', JSON.stringify(packs));
+  }, [packs]);
 
   const handleAddCoins = async (amount) => {
     const numericAmount = parseInt(amount, 10);
@@ -107,7 +124,7 @@ function App() {
 
   const handleAddPlayer = async (playerData, imageFile) => {
     const imagePath = await uploadPlayerImage(imageFile);
-    delete playerData.id; 
+    delete playerData.id;
     const newPlayerData = { ...playerData, clicks: 0, image_url: imagePath };
     const { data, error } = await supabase.from('players').insert(newPlayerData).select().single();
     if (error) alert(`Не удалось создать карточку: ${error.message}`);
@@ -135,12 +152,12 @@ function App() {
     const newClicks = (clickedPlayer.clicks || 0) + 1;
     await supabase.from('players').update({ clicks: newClicks }).eq('id', clickedPlayer.id);
   };
-  
+
   const handlePlayerSelect = (player) => {
     handleCardClick(player);
     navigate(`/player/${player.id}`);
   };
-  
+
   const handleOpenPack = async (packId) => {
     const pack = packs.find(p => p.id === packId);
     if (!profile || !pack || profile.coins < pack.price) {
@@ -159,7 +176,7 @@ function App() {
 
     const updatedProfile = await updateProfile({ coins: newBalance, collection: newCollection });
     if (updatedProfile) return revealedCards;
-    
+
     return null;
   };
 
@@ -206,7 +223,7 @@ function App() {
     if (error) console.error("Ошибка сохранения прогноза:", error);
     else setUserPicks(prev => ({ ...prev, [eventId]: updatedPicks }));
   };
-  
+
   const filteredAndSortedPlayers = useMemo(() => {
     let processedPlayers = [...players];
     if (searchQuery.trim()) {
@@ -217,12 +234,12 @@ function App() {
       processedPlayers = processedPlayers.filter(p => p.team === filterByTeam);
     }
     processedPlayers.sort((a, b) => {
-        switch (sortBy) {
-            case 'popularity': return (b.clicks || 0) - (a.clicks || 0);
-            case 'rating_desc': return b.ovr - a.ovr;
-            case 'rating_asc': return a.ovr - b.ovr;
-            default: return 0;
-        }
+      switch (sortBy) {
+        case 'popularity': return (b.clicks || 0) - (a.clicks || 0);
+        case 'rating_desc': return b.ovr - a.ovr;
+        case 'rating_asc': return a.ovr - b.ovr;
+        default: return 0;
+      }
     });
     return processedPlayers;
   }, [players, sortBy, filterByTeam, searchQuery]);
@@ -234,15 +251,16 @@ function App() {
     const player = players.find(p => p.id.toString() === playerId);
     return player ? <PlayerDetailPage player={player} /> : <h2>Игрок не найден!</h2>;
   };
-  
+
   const getNavLinkClass = ({ isActive }) => "nav-button" + (isActive ? " active" : "");
   const handleLogout = async () => { await supabase.auth.signOut(); navigate('/'); };
-  
-  // ИЗМЕНЕНИЕ 3: Добавляем "экран загрузки", который не даст остальной части приложения отрендериться раньше времени.
+
+  // ГЛАВНОЕ ИЗМЕНЕНИЕ: Показываем экран загрузки, пока AuthProvider проверяет сессию
   if (loading) {
-    return <div style={{ textAlign: 'center', paddingTop: '50px' }}>Загрузка...</div>;
+    // Можно сделать этот экран красивее, добавив CSS
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '24px', backgroundColor: '#282c34', color: 'white' }}>Загрузка...</div>;
   }
-  
+
   return (
     <div className="App">
       <header className="app-header">
@@ -256,26 +274,46 @@ function App() {
           {profile && <NavLink to="/profile" className="nav-button user-profile-link">Профиль</NavLink>}
           <div className="user-coins">{profile ? `${profile.coins.toLocaleString('ru-RU')} коинов` : ''}</div>
           {session ? (
-              <>
-                {isAdmin && <NavLink to="/admin/cards" className="admin-toggle-button">Админ</NavLink>}
-                <button className="logout-button" onClick={handleLogout}>Выйти</button>
-              </>
-            ) : (
-              <NavLink to="/login" className="login-button">Войти</NavLink>
-            )
-          }
+            <>
+              {isAdmin && <NavLink to="/admin/cards" className="admin-toggle-button">Админ</NavLink>}
+              <button className="logout-button" onClick={handleLogout}>Выйти</button>
+            </>
+          ) : (
+            <NavLink to="/login" className="login-button">Войти</NavLink>
+          )}
         </div>
       </header>
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<><div className="filter-container"><div className="search-wrapper"><input type="text" placeholder="Поиск по нику или команде..." className="search-input" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div><div className="filter-group"><span className="filter-label">Сортировать:</span><button onClick={() => setSortBy('popularity')} className={`sort-button ${sortBy === 'popularity' ? 'active' : ''}`}>Популярность</button><button onClick={() => setSortBy('rating_desc')} className={`sort-button ${sortBy === 'rating_desc' ? 'active' : ''}`}>Рейтинг ↓</button><button onClick={() => setSortBy('rating_asc')} className={`sort-button ${sortBy === 'rating_asc' ? 'active' : ''}`}>Рейтинг ↑</button></div><div className="filter-group"><label htmlFor="team-select" className="filter-label">Команда:</label><select id="team-select" className="team-select" value={filterByTeam} onChange={(e) => setFilterByTeam(e.target.value)}>{uniqueTeams.map(team => (<option key={team} value={team}>{team}</option>))}</select></div></div><PlayerList players={filteredAndSortedPlayers} onPlayerSelect={handlePlayerSelect} /></>} />
+          <Route path="/" element={
+            <>
+              <div className="filter-container">
+                  <div className="search-wrapper">
+                      <input type="text" placeholder="Поиск по нику или команде..." className="search-input" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-group">
+                      <span className="filter-label">Сортировать:</span>
+                      <button onClick={() => setSortBy('popularity')} className={`sort-button ${sortBy === 'popularity' ? 'active' : ''}`}>Популярность</button>
+                      <button onClick={() => setSortBy('rating_desc')} className={`sort-button ${sortBy === 'rating_desc' ? 'active' : ''}`}>Рейтинг ↓</button>
+                      <button onClick={() => setSortBy('rating_asc')} className={`sort-button ${sortBy === 'rating_asc' ? 'active' : ''}`}>Рейтинг ↑</button>
+                  </div>
+                  <div className="filter-group">
+                      <label htmlFor="team-select" className="filter-label">Команда:</label>
+                      <select id="team-select" className="team-select" value={filterByTeam} onChange={(e) => setFilterByTeam(e.target.value)}>
+                          {uniqueTeams.map(team => (<option key={team} value={team}>{team}</option>))}
+                      </select>
+                  </div>
+              </div>
+              <PlayerList players={filteredAndSortedPlayers} onPlayerSelect={handlePlayerSelect} />
+            </>
+          } />
           <Route path="/player/:playerId" element={<PlayerDetailWrapper />} />
           <Route path="/shop" element={<ShopPage packs={packs} userCoins={profile?.coins || 0} onOpenPack={handleOpenPack} onAddCoins={handleAddCoins} />} />
           <Route path="/pickem" element={<PickemPage events={pickemEvents} userPicks={userPicks} onPick={handleUserPick} />} />
           <Route path="/minigame" element={<MiniGamePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
-          
+
           {/* Админка */}
           <Route path="/admin" element={<ProtectedRoute />}>
               <Route path="cards" element={<AdminPanel players={players} onAddPlayer={handleAddPlayer} onUpdatePlayer={handleUpdatePlayer} onDeletePlayer={handleDeletePlayer} onReorderPlayers={handleReorderPlayers} />} />

@@ -6,43 +6,81 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true); // Загрузка начинается по умолчанию
+  // Изначально ставим loading в true, пока не проверим сессию
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // onAuthStateChange - это единый источник правды. Он срабатывает
-    // как минимум один раз при загрузке страницы с текущей сессией (или null).
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
+    const getSessionAndProfile = async () => {
+      try {
+        // Получаем текущую сессию. Эта функция не бросает ошибку, а возвращает ее в объекте.
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
 
-      if (session?.user) {
-        // Если есть сессия, пытаемся загрузить профиль пользователя
-        const { data: userProfile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
+        setSession(session);
 
-        if (error) {
-          console.error("Ошибка при загрузке профиля пользователя:", error);
-          setProfile(null);
+        if (session?.user) {
+          // Если сессия есть, пытаемся загрузить профиль
+          const { data: userProfile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          // Явно проверяем ошибку при загрузке профиля.
+          // Если профиль не найден (например, в базе данных еще нет записи), это тоже считается ошибкой.
+          if (profileError) {
+             console.error("Ошибка при загрузке профиля пользователя:", profileError);
+             setProfile(null); // Сбрасываем профиль в случае ошибки
+          } else {
+             setProfile(userProfile);
+          }
         } else {
-          setProfile(userProfile);
+          // Если сессии нет, то и профиля быть не может
+          setProfile(null);
         }
-      } else {
-        // Если сессии нет, то и профиля нет
+      } catch (error) {
+        // Ловим любые другие непредвиденные ошибки
+        console.error("Критическая ошибка в AuthProvider при инициализации:", error);
+        setSession(null);
         setProfile(null);
+      } finally {
+        // Этот блок выполнится ВСЕГДА: и после успешного выполнения, и после любой ошибки.
+        // Это гарантирует, что ваше приложение не "зависнет" на экране загрузки.
+        setLoading(false);
       }
-      
-      // ВАЖНО: Этот код выполнится в любом случае (успех, ошибка, нет сессии),
-      // гарантируя, что вечная загрузка невозможна.
-      setLoading(false);
-    });
-
-    // Эта функция вызывается, когда компонент "умирает", чтобы отписаться от слушателя
-    return () => {
-      subscription.unsubscribe();
     };
-  }, []); // Пустой массив зависимостей означает, что этот эффект запустится только один раз
+
+    getSessionAndProfile();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setSession(session);
+        if (session?.user) {
+          // Повторно получаем профиль, чтобы данные были актуальны
+          const { data: userProfile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          if (error) {
+            console.error("Ошибка при обновлении профиля после изменения аутентификации:", error);
+            setProfile(null); // Если ошибка, лучше сбросить профиль
+          } else {
+             setProfile(userProfile);
+          }
+        } else {
+          setProfile(null);
+        }
+        // Устанавливаем loading в false и здесь, на случай если это первое событие
+        setLoading(false);
+      }
+    );
+
+    // Очистка подписки при размонтировании компонента
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const updateProfile = async (updates) => {
     if (!profile) return null;
@@ -57,14 +95,14 @@ export const AuthProvider = ({ children }) => {
       
       if (error) throw error;
       
-      setProfile(data);
+      setProfile(data); // Обновляем локальное состояние профиля
       return data;
     } catch (error) {
       console.error('Ошибка при обновлении профиля:', error.message);
       return null;
     }
   };
-
+  
   const value = {
     session,
     profile,
@@ -77,5 +115,9 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
