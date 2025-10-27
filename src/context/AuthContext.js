@@ -1,3 +1,5 @@
+// src/context/AuthContext.js
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '../services/supabaseClient';
 
@@ -9,38 +11,54 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Эта функция содержит логику получения сессии и профиля.
+    // Она остается без изменений.
     const getSessionAndProfile = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
 
-        setSession(session);
+      setSession(session);
 
-        if (session?.user) {
-          const { data: userProfile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profileError) {
-             console.error("Ошибка при загрузке профиля пользователя:", profileError);
-             setProfile(null);
-          } else {
-             setProfile(userProfile);
-          }
+      if (session?.user) {
+        const { data: userProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profileError) {
+           console.error("Ошибка при загрузке профиля пользователя:", profileError);
+           setProfile(null);
         } else {
-          setProfile(null);
+           setProfile(userProfile);
         }
-      } catch (error) {
-        console.error("Критическая ошибка в AuthProvider при инициализации:", error);
-      } finally {
-        setLoading(false);
+      } else {
+        setProfile(null);
       }
     };
 
-    getSessionAndProfile();
+    // ================= НАЧАЛО ИСПРАВЛЕНИЯ =================
+    // Мы запускаем "гонку": либо getSessionAndProfile() успеет выполниться,
+    // либо сработает таймер через 5 секунд.
+    Promise.race([
+      getSessionAndProfile(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Проверка авторизации заняла слишком много времени')), 5000)
+      )
+    ]).catch(error => {
+      // Логируем ошибку, если она была (включая таймаут)
+      console.warn('Проблема при инициализации AuthProvider:', error.message);
+    }).finally(() => {
+      // ЭТО САМЫЙ ВАЖНЫЙ БЛОК:
+      // Он выполнится в ЛЮБОМ СЛУЧАЕ - при успехе, ошибке или таймауте.
+      // Это гарантирует, что бесконечная загрузка прекратится.
+      setLoading(false);
+    });
+    // ================= КОНЕЦ ИСПРАВЛЕНИЯ =================
 
+
+    // Эта часть кода, которая слушает изменения (логин/логаут),
+    // остается без изменений. Она работает правильно.
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
@@ -59,10 +77,13 @@ export const AuthProvider = ({ children }) => {
         } else {
           setProfile(null);
         }
+        // Убираем загрузку и здесь, на случай если первое событие 
+        // придет раньше, чем закончится getSessionAndProfile
         setLoading(false);
       }
     );
 
+    // Отписываемся от слушателя при размонтировании компонента
     return () => {
       authListener.subscription.unsubscribe();
     };
