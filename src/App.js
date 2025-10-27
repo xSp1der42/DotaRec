@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Routes, Route, NavLink, useNavigate, useParams } from 'react-router-dom';
+import { Routes, Route, NavLink, useNavigate, useParams, Navigate } from 'react-router-dom';
 
 import { supabase } from './services/supabaseClient';
 import { useAuth } from './context/AuthContext';
@@ -16,6 +16,7 @@ import PickemPage from './components/pickem/PickemPage';
 import AdminPickemDashboard from './components/admin/AdminPickemDashboard';
 import MiniGamePage from './components/minigame/MiniGamePage';
 import FilterControls from './components/shared/FilterControls';
+import Loader from './components/shared/Loader'; // Предполагаем, что у вас есть компонент Loader
 
 // Страницы
 import PlayerDetailPage from './pages/PlayerDetailPage';
@@ -23,21 +24,15 @@ import ProfilePage from './pages/ProfilePage';
 
 // Стили
 import './styles/App.css';
+import AdminLayout from './components/admin/AdminLayout'; // Создадим этот компонент
 
 function App() {
-  const { session, profile, isAdmin, updateProfile, loading } = useAuth();
+  const { session, profile, isAdmin, updateProfile, loading: authLoading } = useAuth();
   const [players, setPlayers] = useState([]);
-  const [packs, setPacks] = useState(() => {
-    try {
-      const savedPacks = localStorage.getItem('packs');
-      return savedPacks ? JSON.parse(savedPacks) : [];
-    } catch (error) {
-      return [];
-    }
-  });
-
+  const [packs, setPacks] = useState([]);
   const [pickemEvents, setPickemEvents] = useState([]);
   const [userPicks, setUserPicks] = useState({});
+  const [appLoading, setAppLoading] = useState(true);
 
   const [sortBy, setSortBy] = useState('popularity');
   const [filterByTeam, setFilterByTeam] = useState('All Teams');
@@ -45,7 +40,8 @@ function App() {
 
   const navigate = useNavigate();
 
-  const fetchPublicData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
+    setAppLoading(true);
     try {
       const { data: playersData, error: playersError } = await supabase.from('players').select('*');
       if (playersError) throw playersError;
@@ -54,16 +50,22 @@ function App() {
       const { data: eventsData, error: eventsError } = await supabase.from('pickem_events').select('*');
       if (eventsError) throw eventsError;
       setPickemEvents(eventsData || []);
+
+      const { data: packsData, error: packsError } = await supabase.from('packs').select('*');
+      if (packsError) throw packsError;
+      setPacks(packsData || []);
+
     } catch (error) {
       console.error('Ошибка при загрузке публичных данных:', error);
+    } finally {
+      setAppLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (!loading) {
-      fetchPublicData();
-    }
-  }, [loading, fetchPublicData]);
+    // Не ждем окончания загрузки авторизации, чтобы показать публичные данные
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     if (session?.user) {
@@ -89,9 +91,6 @@ function App() {
     }
   }, [session]);
 
-  useEffect(() => {
-    localStorage.setItem('packs', JSON.stringify(packs));
-  }, [packs]);
 
   const handleAddCoins = async (amount) => {
     const numericAmount = parseInt(amount, 10);
@@ -156,6 +155,34 @@ function App() {
     navigate(`/player/${player.id}`);
   };
 
+  // --- PACKS LOGIC ---
+  const handleAddPack = async (packData) => {
+    const { data, error } = await supabase.from('packs').insert(packData).select().single();
+    if (error) {
+      alert(`Ошибка при добавлении пака: ${error.message}`);
+    } else if (data) {
+      setPacks(prev => [...prev, data]);
+    }
+  };
+
+  const handleUpdatePack = async (packData) => {
+    const { data, error } = await supabase.from('packs').update(packData).eq('id', packData.id).select().single();
+     if (error) {
+      alert(`Ошибка при обновлении пака: ${error.message}`);
+    } else if (data) {
+      setPacks(prev => prev.map(p => p.id === data.id ? data : p));
+    }
+  };
+  
+  const handleDeletePack = async (packId) => {
+    const { error } = await supabase.from('packs').delete().eq('id', packId);
+    if (error) {
+       alert(`Ошибка при удалении пака: ${error.message}`);
+    } else {
+       setPacks(prev => prev.filter(p => p.id !== packId));
+    }
+  };
+
   const handleOpenPack = async (packId) => {
     const pack = packs.find(p => p.id === packId);
     if (!profile || !pack || profile.coins < pack.price) {
@@ -164,11 +191,14 @@ function App() {
     }
     
     const newBalance = profile.coins - pack.price;
-    const pool = players.filter(p => pack.playerPool.includes(p.id));
-    if (pool.length < pack.cardsInPack) return [];
+    const pool = players.filter(p => pack.player_pool.includes(p.id));
+    if (pool.length < pack.cards_in_pack) {
+        alert("В пуле этого пака недостаточно игроков. Обратитесь к администратору.");
+        return [];
+    };
 
     const shuffled = pool.sort(() => 0.5 - Math.random());
-    const revealedCards = shuffled.slice(0, pack.cardsInPack);
+    const revealedCards = shuffled.slice(0, pack.cards_in_pack);
     const revealedCardIds = revealedCards.map(c => c.id);
     const newCollection = [...(profile.collection || []), ...revealedCardIds];
 
@@ -178,6 +208,7 @@ function App() {
     return null;
   };
 
+  // --- PICKEM LOGIC ---
   const handleAddEvent = async (title) => {
     const { data, error } = await supabase.from('pickem_events').insert({ title, matches: [] }).select().single();
     if (error) console.error(error);
@@ -253,8 +284,8 @@ function App() {
   const getNavLinkClass = ({ isActive }) => "nav-button" + (isActive ? " active" : "");
   const handleLogout = async () => { await supabase.auth.signOut(); navigate('/'); };
 
-  if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '24px', backgroundColor: '#1a1a21', color: 'white' }}>Загрузка...</div>;
+  if (authLoading) {
+    return <div className="loading-fullscreen">Загрузка сессии...</div>;
   }
 
   return (
@@ -268,10 +299,10 @@ function App() {
         </nav>
         <div className="header-right">
           {profile && <NavLink to="/profile" className="nav-button user-profile-link">Профиль</NavLink>}
-          <div className="user-coins">{profile ? `${profile.coins.toLocaleString('ru-RU')} коинов` : ''}</div>
+          <div className="user-coins">{profile ? `${(profile.coins || 0).toLocaleString('ru-RU')} коинов` : ''}</div>
           {session ? (
             <>
-              {isAdmin && <NavLink to="/admin/cards" className="admin-toggle-button">Админ</NavLink>}
+              {isAdmin && <NavLink to="/admin" className="admin-toggle-button">Админ</NavLink>}
               <button className="logout-button" onClick={handleLogout}>Выйти</button>
             </>
           ) : (
@@ -280,35 +311,40 @@ function App() {
         </div>
       </header>
       <main className="main-content">
-        <Routes>
-          <Route path="/" element={
-            <>
-              <FilterControls
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                filterByTeam={filterByTeam}
-                setFilterByTeam={setFilterByTeam}
-                uniqueTeams={uniqueTeams}
-              />
-              <PlayerList players={filteredAndSortedPlayers} onPlayerSelect={handlePlayerSelect} />
-            </>
-          } />
-          <Route path="/player/:playerId" element={<PlayerDetailWrapper />} />
-          <Route path="/shop" element={<ShopPage packs={packs} userCoins={profile?.coins || 0} onOpenPack={handleOpenPack} onAddCoins={handleAddCoins} />} />
-          <Route path="/pickem" element={<PickemPage events={pickemEvents} userPicks={userPicks} onPick={handleUserPick} />} />
-          <Route path="/minigame" element={<MiniGamePage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/login" element={<LoginPage />} />
+        {appLoading && players.length === 0 ? <Loader /> : (
+            <Routes>
+            <Route path="/" element={
+                <>
+                <FilterControls
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                    filterByTeam={filterByTeam}
+                    setFilterByTeam={setFilterByTeam}
+                    uniqueTeams={uniqueTeams}
+                />
+                <PlayerList players={filteredAndSortedPlayers} onPlayerSelect={handlePlayerSelect} />
+                </>
+            } />
+            <Route path="/player/:playerId" element={<PlayerDetailWrapper />} />
+            <Route path="/shop" element={<ShopPage packs={packs} userCoins={profile?.coins || 0} onOpenPack={handleOpenPack} onAddCoins={handleAddCoins} />} />
+            <Route path="/pickem" element={<PickemPage events={pickemEvents} userPicks={userPicks} onPick={handleUserPick} />} />
+            <Route path="/minigame" element={<MiniGamePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/login" element={<LoginPage />} />
 
-          {/* Админка */}
-          <Route path="/admin" element={<ProtectedRoute />}>
-              <Route path="cards" element={<AdminPanel players={players} onAddPlayer={handleAddPlayer} onUpdatePlayer={handleUpdatePlayer} onDeletePlayer={handleDeletePlayer} onReorderPlayers={handleReorderPlayers} />} />
-              <Route path="packs" element={<AdminPacks packs={packs} players={players} onAddPack={(pack) => setPacks(prev => [...prev, pack])} onUpdatePack={(pack) => setPacks(prev => prev.map(p => p.id === pack.id ? pack : p))} onDeletePack={(id) => setPacks(prev => prev.filter(p => p.id !== id))} onAddCoins={handleAddCoins} />} />
-              <Route path="pickem" element={<AdminPickemDashboard events={pickemEvents} onAddEvent={handleAddEvent} onDeleteEvent={handleDeleteEvent} onSaveMatch={handleSaveMatch} onDeleteMatch={handleDeleteMatch} />} />
-          </Route>
-        </Routes>
+            {/* Админка */}
+            <Route path="/admin" element={<ProtectedRoute />}>
+                <Route element={<AdminLayout />}>
+                    <Route index element={<Navigate to="cards" replace />} />
+                    <Route path="cards" element={<AdminPanel players={players} onAddPlayer={handleAddPlayer} onUpdatePlayer={handleUpdatePlayer} onDeletePlayer={handleDeletePlayer} onReorderPlayers={handleReorderPlayers} />} />
+                    <Route path="packs" element={<AdminPacks packs={packs} players={players} onAddPack={handleAddPack} onUpdatePack={handleUpdatePack} onDeletePack={handleDeletePack} onAddCoins={handleAddCoins} />} />
+                    <Route path="pickem" element={<AdminPickemDashboard events={pickemEvents} onAddEvent={handleAddEvent} onDeleteEvent={handleDeleteEvent} onSaveMatch={handleSaveMatch} onDeleteMatch={handleDeleteMatch} />} />
+                </Route>
+            </Route>
+            </Routes>
+        )}
       </main>
     </div>
   );

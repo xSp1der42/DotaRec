@@ -6,7 +6,7 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onA
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [packToEdit, setPackToEdit] = useState(null);
   const [formData, setFormData] = useState({
-    id: null, name: '', description: '', price: 100, cardsInPack: 3, playerPool: [],
+    id: null, name: '', description: '', price: 100, cards_in_pack: 3, player_pool: [],
   });
   const [coinsToAdd, setCoinsToAdd] = useState(1000);
 
@@ -17,8 +17,8 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onA
         name: packToEdit.name || '',
         description: packToEdit.description || '',
         price: packToEdit.price || 100,
-        cardsInPack: packToEdit.cardsInPack || 3,
-        playerPool: packToEdit.playerPool || [],
+        cards_in_pack: packToEdit.cards_in_pack || 3,
+        player_pool: packToEdit.player_pool || [],
       });
       setIsFormVisible(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -28,7 +28,7 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onA
   }, [packToEdit]);
 
   const resetForm = () => {
-    setFormData({ id: null, name: '', description: '', price: 100, cardsInPack: 3, playerPool: [] });
+    setFormData({ id: null, name: '', description: '', price: 100, cards_in_pack: 3, player_pool: [] });
   };
 
   const handleAddNew = () => {
@@ -48,22 +48,31 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onA
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    // Убедимся, что числовые поля сохраняются как числа
+    const isNumeric = ['price', 'cards_in_pack'].includes(name);
+    setFormData(prev => ({ ...prev, [name]: isNumeric ? Number(value) : value }));
   };
   
   const handlePlayerToggle = (playerId) => {
     setFormData(prev => {
-      const newPlayerPool = prev.playerPool.includes(playerId)
-        ? prev.playerPool.filter(id => id !== playerId)
-        : [...prev.playerPool, playerId];
-      return { ...prev, playerPool: newPlayerPool };
+      const newPlayerPool = prev.player_pool.includes(playerId)
+        ? prev.player_pool.filter(id => id !== playerId)
+        : [...prev.player_pool, playerId];
+      return { ...prev, player_pool: newPlayerPool };
     });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.id) onUpdatePack(formData);
-    else onAddPack({ ...formData, id: uuidv4() });
+    if (formData.id) {
+        onUpdatePack(formData);
+    } else {
+        // ID будет сгенерирован в Supabase, но для React-ключа можно использовать временный
+        // или дождаться ответа. Проще передать без ID.
+        const packDataForCreation = { ...formData, id: uuidv4() };
+        delete packDataForCreation.id; // Удаляем ID, т.к. база данных сгенерирует свой.
+        onAddPack(packDataForCreation);
+    }
     handleCancel();
   };
 
@@ -116,16 +125,16 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onA
             </div>
             <div className="form-group">
                 <label>Карточек в паке</label>
-                <input type="number" name="cardsInPack" value={formData.cardsInPack} onChange={handleChange} min="1" required />
+                <input type="number" name="cards_in_pack" value={formData.cards_in_pack} onChange={handleChange} min="1" required />
             </div>
           </div>
-          <h3>Игроки в паке ({formData.playerPool.length} выбрано)</h3>
+          <h3>Игроки в паке ({formData.player_pool.length} выбрано)</h3>
           <p className="pool-notice">Выберите всех игроков, которые могут выпасть из этого пака. Их должно быть больше или равно количеству карточек в паке.</p>
           <div className="player-pool-selector">
             {players.map(player => (
               <div
                 key={player.id}
-                className={`player-pool-item ${formData.playerPool.includes(player.id) ? 'selected' : ''}`}
+                className={`player-pool-item ${formData.player_pool.includes(player.id) ? 'selected' : ''}`}
                 onClick={() => handlePlayerToggle(player.id)}
               >
                 {player.nickname}
@@ -144,7 +153,7 @@ const AdminPacks = ({ packs, players, onAddPack, onUpdatePack, onDeletePack, onA
         {packs.map(pack => (
           <div key={pack.id} className="player-item-admin pack-item-admin">
             <div className="info">
-              <strong>{pack.name}</strong> ({pack.price.toLocaleString('ru-RU')} коинов) - {pack.playerPool.length} игроков в пуле
+              <strong>{pack.name}</strong> ({pack.price.toLocaleString('ru-RU')} коинов) - {pack.player_pool.length} игроков в пуле
             </div>
             <div className="actions">
               <button onClick={() => handleEdit(pack)} className="edit-btn">Редактировать</button>
