@@ -11,6 +11,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Эта функция содержит логику получения сессии и профиля.
+    // Она остается без изменений.
     const getSessionAndProfile = async () => {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
@@ -37,11 +39,11 @@ export const AuthProvider = ({ children }) => {
 
     // ================= НАЧАЛО ИСПРАВЛЕНИЯ =================
     // Мы запускаем "гонку": либо getSessionAndProfile() успеет выполниться,
-    // либо сработает таймер. Увеличиваем время ожидания до 15 секунд.
+    // либо сработает таймер через 5 секунд.
     Promise.race([
       getSessionAndProfile(),
       new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Проверка авторизации заняла слишком много времени')), 15000) // <--- ИЗМЕНЕНИЕ ЗДЕСЬ
+        setTimeout(() => reject(new Error('Проверка авторизации заняла слишком много времени')), 5000)
       )
     ]).catch(error => {
       // Логируем ошибку, если она была (включая таймаут)
