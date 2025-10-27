@@ -1,4 +1,7 @@
+// src/pages/ProfilePage.js
+
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // <--- ШАГ 1: ДОБАВЛЯЕМ ЭТОТ ИМПОРТ
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseClient';
 import PlayerCard from '../components/cards/PlayerCard';
@@ -25,15 +28,20 @@ const ProfilePage = () => {
       if (error) {
         console.error('Error fetching inventory:', error);
       } else {
+        // Чтобы отобразить дубликаты, мы сопоставим ID с данными
         const fullInventory = profile.collection.map(playerId => 
             players.find(p => p.id === playerId)
-        ).filter(Boolean);
+        ).filter(Boolean); // filter(Boolean) убирает undefined, если игрок был удален
         setInventory(fullInventory);
       }
       setLoading(false);
     };
 
-    fetchInventory();
+    if (profile) {
+        fetchInventory();
+    } else {
+        setLoading(false);
+    }
   }, [profile]);
 
   if (loading) {
@@ -58,12 +66,13 @@ const ProfilePage = () => {
       {inventory.length > 0 ? (
         <div className="inventory-grid">
           {inventory.map((player, index) => (
+            // Используем index в key, т.к. карточки могут повторяться
             <PlayerCard key={`${player.id}-${index}`} player={player} isClickable={false} />
           ))}
         </div>
       ) : (
         <p className="empty-inventory-message">
-          Ваша коллекция пуста. Отправляйтесь в <a href="/shop">магазин</a>, чтобы открыть свой первый пак!
+          Ваша коллекция пуста. Отправляйтесь в <Link to="/shop">магазин</Link>, чтобы открыть свой первый пак! {/* <--- ШАГ 2: ИСПРАВЛЯЕМ 'a' НА 'Link' */}
         </p>
       )}
     </div>
