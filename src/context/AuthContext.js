@@ -8,86 +8,46 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Загрузка начинается как true
 
   useEffect(() => {
-    // Эта функция содержит логику получения сессии и профиля.
-    // Она остается без изменений.
-    const getSessionAndProfile = async () => {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
-
-      setSession(session);
-
-      if (session?.user) {
-        const { data: userProfile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profileError) {
-           console.error("Ошибка при загрузке профиля пользователя:", profileError);
-           setProfile(null);
-        } else {
-           setProfile(userProfile);
-        }
-      } else {
-        setProfile(null);
-      }
-    };
-
-    // ================= НАЧАЛО ИСПРАВЛЕНИЯ =================
-    // Мы запускаем "гонку": либо getSessionAndProfile() успеет выполниться,
-    // либо сработает таймер через 5 секунд.
-    Promise.race([
-      getSessionAndProfile(),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Проверка авторизации заняла слишком много времени')), 5000)
-      )
-    ]).catch(error => {
-      // Логируем ошибку, если она была (включая таймаут)
-      console.warn('Проблема при инициализации AuthProvider:', error.message);
-    }).finally(() => {
-      // ЭТО САМЫЙ ВАЖНЫЙ БЛОК:
-      // Он выполнится в ЛЮБОМ СЛУЧАЕ - при успехе, ошибке или таймауте.
-      // Это гарантирует, что бесконечная загрузка прекратится.
-      setLoading(false);
-    });
-    // ================= КОНЕЦ ИСПРАВЛЕНИЯ =================
-
-
-    // Эта часть кода, которая слушает изменения (логин/логаут),
-    // остается без изменений. Она работает правильно.
+    // onAuthStateChange - это лучший и самый надежный способ управлять состоянием.
+    // Он срабатывает ОДИН РАЗ при первоначальной загрузке страницы,
+    // а затем при каждом входе или выходе из системы.
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
+        
+        // Если есть сессия (пользователь залогинен), получаем его профиль.
         if (session?.user) {
           const { data: userProfile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
+
           if (error) {
-            console.error("Ошибка при обновлении профиля после изменения auth:", error);
+            console.error("AuthContext: Ошибка при загрузке профиля:", error.message);
             setProfile(null);
           } else {
-             setProfile(userProfile);
+            setProfile(userProfile);
           }
         } else {
+          // Если сессии нет (пользователь не залогинен или вышел), профиль точно null.
           setProfile(null);
         }
-        // Убираем загрузку и здесь, на случай если первое событие 
-        // придет раньше, чем закончится getSessionAndProfile
+        
+        // ВАЖНО: Убираем экран загрузки ПОСЛЕ того, как все проверки завершены.
         setLoading(false);
       }
     );
 
-    // Отписываемся от слушателя при размонтировании компонента
+    // Эта функция нужна для того, чтобы отписаться от слушателя, 
+    // когда компонент будет удален со страницы (чтобы избежать утечек памяти).
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Пустой массив зависимостей означает, что этот эффект запустится только один раз при монтировании.
 
   const updateProfile = async (updates) => {
     if (!profile) return null;
@@ -113,7 +73,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     session,
     profile,
-    loading,
+    loading, // Это состояние теперь будет управляться идеально.
     updateProfile,
     isAdmin: profile?.role === 'admin',
   };
