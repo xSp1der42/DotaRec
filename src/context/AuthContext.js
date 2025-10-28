@@ -11,79 +11,80 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Эта функция содержит логику получения сессии и профиля.
-    // Она остается без изменений.
     const getSessionAndProfile = async () => {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
+      console.time("AuthCheck");
 
-      setSession(session);
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        console.timeEnd("AuthCheck");
 
-      if (session?.user) {
-        const { data: userProfile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profileError) {
-           console.error("Ошибка при загрузке профиля пользователя:", profileError);
-           setProfile(null);
+        if (sessionError) throw sessionError;
+
+        setSession(session);
+
+        if (session?.user) {
+          const { data: userProfile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profileError) {
+            console.error("Ошибка при загрузке профиля пользователя:", profileError);
+            setProfile(null);
+          } else {
+            setProfile(userProfile);
+          }
         } else {
-           setProfile(userProfile);
+          setProfile(null);
         }
-      } else {
+      } catch (error) {
+        console.warn("Ошибка при получении сессии или профиля:", error.message);
+        setSession(null);
         setProfile(null);
       }
     };
 
-    // ================= НАЧАЛО ИСПРАВЛЕНИЯ =================
-    // Мы запускаем "гонку": либо getSessionAndProfile() успеет выполниться,
-    // либо сработает таймер через 5 секунд.
-    Promise.race([
-      getSessionAndProfile(),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Проверка авторизации заняла слишком много времени')), 5000)
-      )
-    ]).catch(error => {
-      // Логируем ошибку, если она была (включая таймаут)
-      console.warn('Проблема при инициализации AuthProvider:', error.message);
-    }).finally(() => {
-      // ЭТО САМЫЙ ВАЖНЫЙ БЛОК:
-      // Он выполнится в ЛЮБОМ СЛУЧАЕ - при успехе, ошибке или таймауте.
-      // Это гарантирует, что бесконечная загрузка прекратится.
-      setLoading(false);
-    });
-    // ================= КОНЕЦ ИСПРАВЛЕНИЯ =================
+    // === Новый механизм: без ложных ошибок, с умным таймаутом ===
+    const timeoutMs = navigator.connection?.effectiveType === '4g' ? 8000 : 15000;
+    const timeoutPromise = new Promise(resolve => 
+      setTimeout(() => {
+        console.warn(`[AuthProvider] Проверка авторизации заняла более ${timeoutMs / 1000} секунд. Продолжаем без ожидания.`);
+        resolve();
+      }, timeoutMs)
+    );
 
+    Promise.race([getSessionAndProfile(), timeoutPromise])
+      .finally(() => {
+        setLoading(false);
+      });
 
-    // Эта часть кода, которая слушает изменения (логин/логаут),
-    // остается без изменений. Она работает правильно.
+    // === Подписка на изменения авторизации ===
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
+
         if (session?.user) {
           const { data: userProfile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
+
           if (error) {
             console.error("Ошибка при обновлении профиля после изменения auth:", error);
             setProfile(null);
           } else {
-             setProfile(userProfile);
+            setProfile(userProfile);
           }
         } else {
           setProfile(null);
         }
-        // Убираем загрузку и здесь, на случай если первое событие 
-        // придет раньше, чем закончится getSessionAndProfile
+
         setLoading(false);
       }
     );
 
-    // Отписываемся от слушателя при размонтировании компонента
     return () => {
       authListener.subscription.unsubscribe();
     };
@@ -99,9 +100,9 @@ export const AuthProvider = ({ children }) => {
         .eq('id', profile.id)
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       setProfile(data);
       return data;
     } catch (error) {
@@ -109,7 +110,7 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   };
-  
+
   const value = {
     session,
     profile,
