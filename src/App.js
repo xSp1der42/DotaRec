@@ -1,3 +1,5 @@
+// src/App.js
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Routes, Route, NavLink, useNavigate, useParams, Navigate } from 'react-router-dom';
@@ -16,7 +18,7 @@ import PickemPage from './components/pickem/PickemPage';
 import AdminPickemDashboard from './components/admin/AdminPickemDashboard';
 import MiniGamePage from './components/minigame/MiniGamePage';
 import FilterControls from './components/shared/FilterControls';
-import Loader from './components/shared/Loader'; // Предполагаем, что у вас есть компонент Loader
+import Loader from './components/shared/Loader';
 
 // Страницы
 import PlayerDetailPage from './pages/PlayerDetailPage';
@@ -24,7 +26,7 @@ import ProfilePage from './pages/ProfilePage';
 
 // Стили
 import './styles/App.css';
-import AdminLayout from './components/admin/AdminLayout'; // Создадим этот компонент
+import AdminLayout from './components/admin/AdminLayout';
 
 function App() {
   const { session, profile, isAdmin, updateProfile, loading: authLoading } = useAuth();
@@ -40,9 +42,12 @@ function App() {
 
   const navigate = useNavigate();
 
-  const fetchData = useCallback(async () => {
+  // ================= НАЧАЛО ИСПРАВЛЕНИЯ =================
+  const fetchData = useCallback(() => {
     setAppLoading(true);
-    try {
+
+    // Эта функция содержит основную логику загрузки данных
+    const fetchCoreData = async () => {
       const { data: playersData, error: playersError } = await supabase.from('players').select('*');
       if (playersError) throw playersError;
       setPlayers(playersData || []);
@@ -54,19 +59,32 @@ function App() {
       const { data: packsData, error: packsError } = await supabase.from('packs').select('*');
       if (packsError) throw packsError;
       setPacks(packsData || []);
+    };
 
-    } catch (error) {
-      console.error('Ошибка при загрузке публичных данных:', error);
-    } finally {
+    // Используем тот же паттерн "гонки" с таймаутом, что и в AuthContext
+    Promise.race([
+      fetchCoreData(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Загрузка публичных данных заняла слишком много времени')), 8000) // 8 секундный таймаут
+      )
+    ]).catch(error => {
+      console.warn('Проблема при загрузке данных приложения:', error.message);
+      // Можно дополнительно установить состояние ошибки, чтобы показать сообщение пользователю
+    }).finally(() => {
+      // Это самый важный блок: он гарантирует, что загрузка прекратится
+      // в любом случае - при успехе, ошибке или таймауте.
       setAppLoading(false);
-    }
-  }, []);
+    });
+  }, []); // Зависимостей нет, т.к. функция не использует внешние переменные
+  // ================= КОНЕЦ ИСПРАВЛЕНИЯ =================
 
   useEffect(() => {
     // Не ждем окончания загрузки авторизации, чтобы показать публичные данные
     fetchData();
   }, [fetchData]);
 
+  // ... остальная часть файла App.js остается без изменений ...
+  
   useEffect(() => {
     if (session?.user) {
       const fetchUserPicks = async () => {
