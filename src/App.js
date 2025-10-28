@@ -1,9 +1,7 @@
 // src/App.js
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Routes, Route, NavLink, useNavigate, useParams, Navigate } from 'react-router-dom';
-
 import { supabase } from './services/supabaseClient';
 import { useAuth } from './context/AuthContext';
 
@@ -24,9 +22,11 @@ import Loader from './components/shared/Loader';
 import PlayerDetailPage from './pages/PlayerDetailPage';
 import ProfilePage from './pages/ProfilePage';
 
+// Layout
+import AdminLayout from './components/admin/AdminLayout';
+
 // Стили
 import './styles/App.css';
-import AdminLayout from './components/admin/AdminLayout';
 
 function App() {
   const { session, profile, isAdmin, updateProfile, loading: authLoading } = useAuth();
@@ -42,49 +42,46 @@ function App() {
 
   const navigate = useNavigate();
 
-  // ================= НАЧАЛО ИСПРАВЛЕНИЯ =================
+  // === Универсальная и отказоустойчивая загрузка данных ===
   const fetchData = useCallback(() => {
     setAppLoading(true);
 
-    // Эта функция содержит основную логику загрузки данных
     const fetchCoreData = async () => {
-      const { data: playersData, error: playersError } = await supabase.from('players').select('*');
-      if (playersError) throw playersError;
-      setPlayers(playersData || []);
+      // Используем Promise.all для параллельной загрузки
+      const [playersRes, eventsRes, packsRes] = await Promise.all([
+        supabase.from('players').select('*'),
+        supabase.from('pickem_events').select('*'),
+        supabase.from('packs').select('*'),
+      ]);
 
-      const { data: eventsData, error: eventsError } = await supabase.from('pickem_events').select('*');
-      if (eventsError) throw eventsError;
-      setPickemEvents(eventsData || []);
+      if (playersRes.error) throw playersRes.error;
+      if (eventsRes.error) throw eventsRes.error;
+      if (packsRes.error) throw packsRes.error;
 
-      const { data: packsData, error: packsError } = await supabase.from('packs').select('*');
-      if (packsError) throw packsError;
-      setPacks(packsData || []);
+      setPlayers(playersRes.data || []);
+      setPickemEvents(eventsRes.data || []);
+      setPacks(packsRes.data || []);
     };
 
-    // Используем тот же паттерн "гонки" с таймаутом, что и в AuthContext
+    // Оборачиваем загрузку в Promise.race с таймаутом, чтобы избежать "зависшей" загрузки
     Promise.race([
       fetchCoreData(),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Загрузка публичных данных заняла слишком много времени')), 8000) // 8 секундный таймаут
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Загрузка публичных данных заняла слишком много времени')), 8000)
       )
     ]).catch(error => {
       console.warn('Проблема при загрузке данных приложения:', error.message);
-      // Можно дополнительно установить состояние ошибки, чтобы показать сообщение пользователю
     }).finally(() => {
-      // Это самый важный блок: он гарантирует, что загрузка прекратится
-      // в любом случае - при успехе, ошибке или таймауте.
       setAppLoading(false);
     });
-  }, []); // Зависимостей нет, т.к. функция не использует внешние переменные
-  // ================= КОНЕЦ ИСПРАВЛЕНИЯ =================
+  }, []);
 
+  // === Подгружаем данные сразу после запуска ===
   useEffect(() => {
-    // Не ждем окончания загрузки авторизации, чтобы показать публичные данные
     fetchData();
   }, [fetchData]);
 
-  // ... остальная часть файла App.js остается без изменений ...
-  
+  // === Прогнозы пользователя ===
   useEffect(() => {
     if (session?.user) {
       const fetchUserPicks = async () => {
@@ -109,7 +106,7 @@ function App() {
     }
   }, [session]);
 
-
+  // === Баланс и обновления профиля ===
   const handleAddCoins = async (amount) => {
     const numericAmount = parseInt(amount, 10);
     if (!profile || isNaN(numericAmount) || numericAmount <= 0) {
@@ -117,14 +114,15 @@ function App() {
       return;
     }
     const newBalance = (profile.coins || 0) + numericAmount;
-    const updatedProfile = await updateProfile({ coins: newBalance });
-    if (updatedProfile) {
+    const updated = await updateProfile({ coins: newBalance });
+    if (updated) {
       alert(`${numericAmount.toLocaleString('ru-RU')} коинов успешно добавлено!`);
     } else {
       alert('Не удалось обновить баланс.');
     }
   };
 
+  // === Работа с игроками ===
   const uploadPlayerImage = async (file) => {
     if (!file) return null;
     const fileExt = file.name.split('.').pop();
@@ -158,7 +156,7 @@ function App() {
   const handleDeletePlayer = async (playerId) => {
     const { error } = await supabase.from('players').delete().eq('id', playerId);
     if (error) alert(`Не удалось удалить карточку: ${error.message}`);
-    else setPlayers(prevPlayers => prevPlayers.filter(p => p.id !== playerId));
+    else setPlayers(prev => prev.filter(p => p.id !== playerId));
   };
 
   const handleReorderPlayers = (reorderedPlayers) => setPlayers(reorderedPlayers);
@@ -173,32 +171,23 @@ function App() {
     navigate(`/player/${player.id}`);
   };
 
-  // --- PACKS LOGIC ---
+  // === Админка: паки ===
   const handleAddPack = async (packData) => {
     const { data, error } = await supabase.from('packs').insert(packData).select().single();
-    if (error) {
-      alert(`Ошибка при добавлении пака: ${error.message}`);
-    } else if (data) {
-      setPacks(prev => [...prev, data]);
-    }
+    if (error) alert(`Ошибка при добавлении пака: ${error.message}`);
+    else if (data) setPacks(prev => [...prev, data]);
   };
 
   const handleUpdatePack = async (packData) => {
     const { data, error } = await supabase.from('packs').update(packData).eq('id', packData.id).select().single();
-     if (error) {
-      alert(`Ошибка при обновлении пака: ${error.message}`);
-    } else if (data) {
-      setPacks(prev => prev.map(p => p.id === data.id ? data : p));
-    }
+    if (error) alert(`Ошибка при обновлении пака: ${error.message}`);
+    else if (data) setPacks(prev => prev.map(p => (p.id === data.id ? data : p)));
   };
-  
-  const handleDeletePack = async (packId) => {
-    const { error } = await supabase.from('packs').delete().eq('id', packId);
-    if (error) {
-       alert(`Ошибка при удалении пака: ${error.message}`);
-    } else {
-       setPacks(prev => prev.filter(p => p.id !== packId));
-    }
+
+  const handleDeletePack = async (id) => {
+    const { error } = await supabase.from('packs').delete().eq('id', id);
+    if (error) alert(`Ошибка при удалении пака: ${error.message}`);
+    else setPacks(prev => prev.filter(p => p.id !== id));
   };
 
   const handleOpenPack = async (packId) => {
@@ -207,80 +196,78 @@ function App() {
       alert("Недостаточно коинов или вы не авторизованы!");
       return null;
     }
-    
-    const newBalance = profile.coins - pack.price;
+
     const pool = players.filter(p => pack.player_pool.includes(p.id));
     if (pool.length < pack.cards_in_pack) {
-        alert("В пуле этого пака недостаточно игроков. Обратитесь к администратору.");
-        return [];
-    };
+      alert("В пуле этого пака недостаточно игроков. Обратитесь к администратору.");
+      return [];
+    }
 
-    const shuffled = pool.sort(() => 0.5 - Math.random());
-    const revealedCards = shuffled.slice(0, pack.cards_in_pack);
-    const revealedCardIds = revealedCards.map(c => c.id);
-    const newCollection = [...(profile.collection || []), ...revealedCardIds];
+    const chosen = pool.sort(() => 0.5 - Math.random()).slice(0, pack.cards_in_pack);
+    const revealedIds = chosen.map(c => c.id);
+    const newBalance = profile.coins - pack.price;
+    const newCollection = [...(profile.collection || []), ...revealedIds];
+    const updated = await updateProfile({ coins: newBalance, collection: newCollection });
 
-    const updatedProfile = await updateProfile({ coins: newBalance, collection: newCollection });
-    if (updatedProfile) return revealedCards;
-
-    return null;
+    return updated ? chosen : null;
   };
 
-  // --- PICKEM LOGIC ---
+  // === Pick'em ===
   const handleAddEvent = async (title) => {
     const { data, error } = await supabase.from('pickem_events').insert({ title, matches: [] }).select().single();
     if (error) console.error(error);
     else setPickemEvents(prev => [...prev, data]);
   };
+
   const handleDeleteEvent = async (id) => {
     const { error } = await supabase.from('pickem_events').delete().eq('id', id);
     if (error) console.error(error);
     else setPickemEvents(prev => prev.filter(e => e.id !== id));
   };
+
   const handleSaveMatch = async (eventId, matchData) => {
     const event = pickemEvents.find(e => e.id === eventId);
     if (!event) return;
-    const matchExists = event.matches.some(m => m.id === matchData.id);
-    const updatedMatches = matchExists ? event.matches.map(m => m.id === matchData.id ? matchData : m) : [...event.matches, { ...matchData, id: uuidv4() }];
-    const { data, error } = await supabase.from('pickem_events').update({ matches: updatedMatches }).eq('id', eventId).select().single();
+    const updated = event.matches.some(m => m.id === matchData.id)
+      ? event.matches.map(m => (m.id === matchData.id ? matchData : m))
+      : [...event.matches, { ...matchData, id: uuidv4() }];
+    const { data, error } = await supabase.from('pickem_events').update({ matches: updated }).eq('id', eventId).select().single();
     if (error) console.error(error);
-    else setPickemEvents(prev => prev.map(e => e.id === data.id ? data : e));
+    else setPickemEvents(prev => prev.map(e => (e.id === data.id ? data : e)));
   };
+
   const handleDeleteMatch = async (eventId, matchId) => {
     const event = pickemEvents.find(e => e.id === eventId);
     if (!event) return;
-    const updatedMatches = event.matches.filter(m => m.id !== matchId);
-    const { data, error } = await supabase.from('pickem_events').update({ matches: updatedMatches }).eq('id', eventId).select().single();
+    const updated = event.matches.filter(m => m.id !== matchId);
+    const { data, error } = await supabase.from('pickem_events').update({ matches: updated }).eq('id', eventId).select().single();
     if (error) console.error(error);
-    else setPickemEvents(prev => prev.map(e => e.id === data.id ? data : e));
+    else setPickemEvents(prev => prev.map(e => (e.id === data.id ? data : e)));
   };
 
   const handleUserPick = async (eventId, matchId, team) => {
-    if (!profile) { alert("Войдите, чтобы сделать прогноз!"); return; }
-    
-    const currentEventPicks = userPicks[eventId] || {};
-    const updatedPicks = { ...currentEventPicks, [matchId]: team };
+    if (!profile) return alert('Войдите, чтобы сделать прогноз!');
+    const current = userPicks[eventId] || {};
+    const updated = { ...current, [matchId]: team };
 
-    const { error } = await supabase.from('user_picks').upsert({
-        user_id: profile.id,
-        event_id: eventId,
-        picks: updatedPicks
-    }, { onConflict: 'user_id, event_id' });
+    const { error } = await supabase.from('user_picks').upsert(
+      { user_id: profile.id, event_id: eventId, picks: updated },
+      { onConflict: 'user_id, event_id' }
+    );
 
-    if (error) console.error("Ошибка сохранения прогноза:", error);
-    else setUserPicks(prev => ({ ...prev, [eventId]: updatedPicks }));
+    if (error) console.error('Ошибка прогноза:', error);
+    else setUserPicks(prev => ({ ...prev, [eventId]: updated }));
   };
 
+  // === Мемоизированные значения для фильтрации и UI ===
   const filteredAndSortedPlayers = useMemo(() => {
-    let processedPlayers = [...players];
+    let res = [...players];
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      processedPlayers = processedPlayers.filter(p => p.nickname?.toLowerCase().includes(q) || p.team?.toLowerCase().includes(q));
+      res = res.filter(p => p.nickname?.toLowerCase().includes(q) || p.team?.toLowerCase().includes(q));
     }
-    if (filterByTeam !== 'All Teams') {
-      processedPlayers = processedPlayers.filter(p => p.team === filterByTeam);
-    }
-    processedPlayers.sort((a, b) => {
+    if (filterByTeam !== 'All Teams') res = res.filter(p => p.team === filterByTeam);
+    res.sort((a, b) => {
       switch (sortBy) {
         case 'popularity': return (b.clicks || 0) - (a.clicks || 0);
         case 'rating_desc': return b.ovr - a.ovr;
@@ -288,10 +275,13 @@ function App() {
         default: return 0;
       }
     });
-    return processedPlayers;
+    return res;
   }, [players, sortBy, filterByTeam, searchQuery]);
 
-  const uniqueTeams = useMemo(() => ['All Teams', ...Array.from(new Set(players.map(p => p.team).filter(Boolean))).sort()], [players]);
+  const uniqueTeams = useMemo(
+    () => ['All Teams', ...Array.from(new Set(players.map(p => p.team).filter(Boolean))).sort()],
+    [players]
+  );
 
   const PlayerDetailWrapper = () => {
     const { playerId } = useParams();
@@ -328,40 +318,40 @@ function App() {
           )}
         </div>
       </header>
+
       <main className="main-content">
         {appLoading && players.length === 0 ? <Loader /> : (
-            <Routes>
+          <Routes>
             <Route path="/" element={
-                <>
+              <>
                 <FilterControls
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    sortBy={sortBy}
-                    setSortBy={setSortBy}
-                    filterByTeam={filterByTeam}
-                    setFilterByTeam={setFilterByTeam}
-                    uniqueTeams={uniqueTeams}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  filterByTeam={filterByTeam}
+                  setFilterByTeam={setFilterByTeam}
+                  uniqueTeams={uniqueTeams}
                 />
                 <PlayerList players={filteredAndSortedPlayers} onPlayerSelect={handlePlayerSelect} />
-                </>
+              </>
             } />
             <Route path="/player/:playerId" element={<PlayerDetailWrapper />} />
             <Route path="/shop" element={<ShopPage packs={packs} userCoins={profile?.coins || 0} onOpenPack={handleOpenPack} onAddCoins={handleAddCoins} />} />
             <Route path="/pickem" element={<PickemPage events={pickemEvents} userPicks={userPicks} onPick={handleUserPick} />} />
             <Route path="/minigame" element={<MiniGamePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Админка */}
             <Route path="/admin" element={<ProtectedRoute />}>
-                <Route element={<AdminLayout />}>
-                    <Route index element={<Navigate to="cards" replace />} />
-                    <Route path="cards" element={<AdminPanel players={players} onAddPlayer={handleAddPlayer} onUpdatePlayer={handleUpdatePlayer} onDeletePlayer={handleDeletePlayer} onReorderPlayers={handleReorderPlayers} />} />
-                    <Route path="packs" element={<AdminPacks packs={packs} players={players} onAddPack={handleAddPack} onUpdatePack={handleUpdatePack} onDeletePack={handleDeletePack} onAddCoins={handleAddCoins} />} />
-                    <Route path="pickem" element={<AdminPickemDashboard events={pickemEvents} onAddEvent={handleAddEvent} onDeleteEvent={handleDeleteEvent} onSaveMatch={handleSaveMatch} onDeleteMatch={handleDeleteMatch} />} />
-                </Route>
+              <Route element={<AdminLayout />}>
+                <Route index element={<Navigate to="cards" replace />} />
+                <Route path="cards" element={<AdminPanel players={players} onAddPlayer={handleAddPlayer} onUpdatePlayer={handleUpdatePlayer} onDeletePlayer={handleDeletePlayer} onReorderPlayers={handleReorderPlayers} />} />
+                <Route path="packs" element={<AdminPacks packs={packs} players={players} onAddPack={handleAddPack} onUpdatePack={handleUpdatePack} onDeletePack={handleDeletePack} onAddCoins={handleAddCoins} />} />
+                <Route path="pickem" element={<AdminPickemDashboard events={pickemEvents} onAddEvent={handleAddEvent} onDeleteEvent={handleDeleteEvent} onSaveMatch={handleSaveMatch} onDeleteMatch={handleDeleteMatch} />} />
+              </Route>
             </Route>
-            </Routes>
+          </Routes>
         )}
       </main>
     </div>

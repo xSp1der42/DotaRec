@@ -1,5 +1,4 @@
 // src/context/AuthContext.js
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '../services/supabaseClient';
 
@@ -10,15 +9,15 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // === Загрузка сессии при старте ===
   useEffect(() => {
-    const getSessionAndProfile = async () => {
-      console.time("AuthCheck");
+    let isMounted = true;
 
+    const initAuth = async () => {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        console.timeEnd("AuthCheck");
-
         if (sessionError) throw sessionError;
+        if (!isMounted) return;
 
         setSession(session);
 
@@ -30,7 +29,7 @@ export const AuthProvider = ({ children }) => {
             .single();
 
           if (profileError) {
-            console.error("Ошибка при загрузке профиля пользователя:", profileError);
+            console.error('Ошибка при загрузке профиля:', profileError);
             setProfile(null);
           } else {
             setProfile(userProfile);
@@ -39,40 +38,30 @@ export const AuthProvider = ({ children }) => {
           setProfile(null);
         }
       } catch (error) {
-        console.warn("Ошибка при получении сессии или профиля:", error.message);
+        console.error('Ошибка авторизации:', error.message);
         setSession(null);
         setProfile(null);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
 
-    // === Новый механизм: без ложных ошибок, с умным таймаутом ===
-    const timeoutMs = navigator.connection?.effectiveType === '4g' ? 8000 : 15000;
-    const timeoutPromise = new Promise(resolve => 
-      setTimeout(() => {
-        console.warn(`[AuthProvider] Проверка авторизации заняла более ${timeoutMs / 1000} секунд. Продолжаем без ожидания.`);
-        resolve();
-      }, timeoutMs)
-    );
-
-    Promise.race([getSessionAndProfile(), timeoutPromise])
-      .finally(() => {
-        setLoading(false);
-      });
+    initAuth();
 
     // === Подписка на изменения авторизации ===
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      async (_event, newSession) => {
+        setSession(newSession);
 
-        if (session?.user) {
+        if (newSession?.user) {
           const { data: userProfile, error } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', session.user.id)
+            .eq('id', newSession.user.id)
             .single();
 
           if (error) {
-            console.error("Ошибка при обновлении профиля после изменения auth:", error);
+            console.error('Ошибка при обновлении профиля:', error);
             setProfile(null);
           } else {
             setProfile(userProfile);
@@ -80,19 +69,17 @@ export const AuthProvider = ({ children }) => {
         } else {
           setProfile(null);
         }
-
-        setLoading(false);
       }
     );
 
     return () => {
-      authListener.subscription.unsubscribe();
+      isMounted = false;
+      subscription.subscription.unsubscribe();
     };
   }, []);
 
   const updateProfile = async (updates) => {
     if (!profile) return null;
-
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -100,9 +87,7 @@ export const AuthProvider = ({ children }) => {
         .eq('id', profile.id)
         .select()
         .single();
-
       if (error) throw error;
-
       setProfile(data);
       return data;
     } catch (error) {
@@ -124,8 +109,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
