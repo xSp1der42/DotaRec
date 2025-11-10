@@ -13,6 +13,11 @@ const StorageTab = ({ storage, allCards, onUpdate }) => {
   const [price, setPrice] = useState('');
   const [showSellModal, setShowSellModal] = useState(false);
 
+  // 1. Получаем id карточек, которые есть в коллекции (через props, если нет — запросить)
+  const collectionIds = allCards
+    .filter(card => card.inCollection)
+    .map(card => card._id?.toString() || card.toString());
+
   // Получаем полные данные карточек из хранилища
   const storageCards = useMemo(() => {
     if (!storage || !allCards) return [];
@@ -68,9 +73,16 @@ const StorageTab = ({ storage, allCards, onUpdate }) => {
     });
   };
 
+  const canMoveToCollection = Array.from(selectedCards).every(id => !collectionIds.includes(id));
+
   const handleMoveToCollection = async () => {
     if (selectedCards.size === 0) {
       alert('Выберите карточки');
+      return;
+    }
+
+    if (!canMoveToCollection) {
+      alert('Выбранные карточки уже находятся в коллекции.');
       return;
     }
 
@@ -106,12 +118,16 @@ const StorageTab = ({ storage, allCards, onUpdate }) => {
       const pricePerCard = parseInt(price);
       
       // Выставляем все выбранные карточки на продажу
-      const promises = cardIds.map(cardId => 
-        api.post('/api/marketplace', {
+      const promises = cardIds.map(cardId => {
+        // ищем карточку в списке storageCards для вытаскивания saison/seasonId
+        const card = storageCards.find(c => (c._id?.toString() || c.toString()) === cardId);
+        const payload = {
           cardId: cardId,
           price: pricePerCard
-        })
-      );
+        };
+        if (card?.season !== undefined) payload.season = card.season;
+        return api.post('/api/marketplace', payload);
+      });
       
       await Promise.all(promises);
       
@@ -122,7 +138,8 @@ const StorageTab = ({ storage, allCards, onUpdate }) => {
       setPrice('');
       if (onUpdate) onUpdate();
     } catch (error) {
-      alert(`Ошибка: ${error.response?.data?.message || error.message}`);
+      const msg = error.response?.data?.message || error.response?.data?.error || error.message;
+      alert(`Ошибка от сервера: ${msg}`);
     }
   };
 
@@ -155,7 +172,11 @@ const StorageTab = ({ storage, allCards, onUpdate }) => {
         <div className="storage-actions">
           {selectedCards.size > 0 && (
             <>
-              <button onClick={handleMoveToCollection} className="action-btn move-btn">
+              <button
+                onClick={handleMoveToCollection}
+                className="action-btn move-btn"
+                disabled={!canMoveToCollection || selectedCards.size === 0}
+              >
                 В коллекцию ({selectedCards.size})
               </button>
               <button onClick={() => setShowSellModal(true)} className="action-btn sell-btn">

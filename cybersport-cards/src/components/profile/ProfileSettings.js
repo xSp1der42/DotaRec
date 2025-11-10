@@ -168,7 +168,7 @@ const ProfileSettings = ({ userProfile }) => {
                 <div className="settings-form">
                     <h3>Аватар профиля</h3>
                     <div className="avatar-upload-section">
-                        <img src={avatarPreview} alt="Предпросмотр аватара" className="avatar-preview" />
+                        <img src={getFullImageUrl(userProfile.avatarUrl)} alt="Предпросмотр аватара" className="avatar-preview" />
                         <input type="file" id="avatar-input" accept="image/*" onChange={onSelectFile} />
                         <label htmlFor="avatar-input" className="custom-file-upload">Выбрать файл</label>
                     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PlayerCard from '../cards/PlayerCard';
 import CoinPurchasePanel from './CoinPurchasePanel';
 import api from '../../services/api';
@@ -8,6 +8,21 @@ import '../../styles/ShopPage.css';
 const CardChoiceModal = ({ cards, onClose, onProcessCards, myCollectionCardIds }) => {
   const [selectedCards, setSelectedCards] = useState(new Set());
   const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    // Сразу автоматом отправляем в коллекцию все новые, которых нет в коллекции
+    if (cards && cards.length > 0 && myCollectionCardIds) {
+      const inCollection = cards.filter(card => myCollectionCardIds.includes(card._id));
+      const notInCollection = cards.filter(card => !myCollectionCardIds.includes(card._id));
+      if (notInCollection.length && inCollection.length !== cards.length) {
+        // сразу помещаем уникальные в коллекцию
+        onProcessCards(notInCollection, 'collection');
+        // показываем только дубли
+        setSelectedCards(new Set(inCollection.map(c => c._id)));
+      }
+    }
+    // eslint-disable-next-line
+  }, [cards]);
 
   const isDuplicate = (cardId) => myCollectionCardIds?.includes(cardId);
 
@@ -70,7 +85,7 @@ const CardChoiceModal = ({ cards, onClose, onProcessCards, myCollectionCardIds }
             onClick={() => handleProcessCards('collection')} 
             className="choice-btn collection-btn"
             disabled={
-              processing || selectedCards.size === 0 || Array.from(selectedCards).some(cardId => isDuplicate(cardId))
+              processing || selectedCards.size === 0 || Array.from(selectedCards).some(cardId => myCollectionCardIds.includes(cardId))
             }
           >
             В коллекцию ({selectedCards.size})
