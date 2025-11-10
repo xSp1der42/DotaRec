@@ -240,3 +240,85 @@
   background-color: #d8901c;
   transform: translateY(-2px);
 }
+.m
+arketplace-btn {
+  background-color: #9C27B0;
+  color: white;
+}
+
+.marketplace-btn:hover:not(:disabled) {
+  background-color: #7B1FA2;
+  transform: translateY(-2px);
+}
+
+.confirm-btn {
+  background-color: #5a67d8;
+  color: white;
+}
+
+.confirm-btn:hover:not(:disabled) {
+  background-color: #4c58b6;
+  transform: translateY(-2px);
+}
+
+.cancel-btn {
+  background-color: #6e6e80;
+  color: white;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background-color: #5a5a6b;
+  transform: translateY(-2px);
+}
+
+/* Duplicate badge */
+.duplicate-badge {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+}
+
+.card-choice-item.duplicate {
+  border: 2px solid rgba(255, 107, 107, 0.3);
+}
+
+/* Marketplace price input section */
+.marketplace-price-section {
+  margin: 20px 0;
+}
+
+.marketplace-price-section h3 {
+  color: #c3dafe;
+  margin-bottom: 15px;
+}
+
+.marketplace-price-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 12px;
+  font-size: 1.1rem;
+  border: 2px solid #5a67d8;
+  border-radius: 8px;
+  background-color: #2c2c44;
+  color: white;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.marketplace-price-input:focus {
+  outline: none;
+  border-color: #7c8adb;
+  box-shadow: 0 0 10px rgba(90, 103, 216, 0.3);
+}
+
+.marketplace-price-input::placeholder {
+  color: #a9a9c9;
+}

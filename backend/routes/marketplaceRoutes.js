@@ -53,21 +53,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Получить мои объявления (требует авторизации) - ДОЛЖЕН БЫТЬ ПЕРЕД /:id
-router.get('/my/listings', protect, async (req, res) => {
-  try {
-    const listings = await MarketplaceListing.find({ seller: req.user.id })
-      .populate('card')
-      .populate('buyer', 'nickname avatarUrl')
-      .sort({ createdAt: -1 });
-    
-    res.json(listings);
-  } catch (error) {
-    console.error('Error fetching my listings:', error);
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
 // Получить объявление по ID
 router.get('/:id', async (req, res) => {
   try {
@@ -173,20 +158,18 @@ router.post('/:id/buy', protect, async (req, res) => {
       return res.status(400).json({ message: 'Insufficient coins' });
     }
     
-    // Получаем текущий сезон
-    const currentSeason = await Season.findOne({ isActive: true });
-    const seasonNumber = currentSeason ? currentSeason.seasonNumber : (buyer.currentSeason || 1);
-    
     // Проверяем, есть ли уже такая карточка в коллекции
-    if (!buyer.cardCollection.includes(listing.card._id)) {
+    const hasInCollection = buyer.cardCollection.some(id => id.toString() === listing.card._id.toString());
+    
+    if (!hasInCollection) {
+      // Новая карточка - добавляем в коллекцию
       buyer.cardCollection.push(listing.card._id);
     } else {
-      // Если уже есть, добавляем в хранилище (если есть место)
-      if (buyer.storage.length < 100) {
-        buyer.storage.push(listing.card._id);
-      } else {
-        return res.status(400).json({ message: 'Your collection and storage are full' });
+      // Дубликат - добавляем в хранилище (если есть место)
+      if (buyer.storage.length >= 100) {
+        return res.status(400).json({ message: 'Storage is full (100/100)' });
       }
+      buyer.storage.push(listing.card._id);
     }
     
     // Переводим коины
@@ -242,6 +225,21 @@ router.delete('/:id', protect, async (req, res) => {
     res.json({ message: 'Listing cancelled successfully' });
   } catch (error) {
     console.error('Error cancelling listing:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// Получить мои объявления (требует авторизации)
+router.get('/my/listings', protect, async (req, res) => {
+  try {
+    const listings = await MarketplaceListing.find({ seller: req.user.id })
+      .populate('card')
+      .populate('buyer', 'nickname avatarUrl')
+      .sort({ createdAt: -1 });
+    
+    res.json(listings);
+  } catch (error) {
+    console.error('Error fetching my listings:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });

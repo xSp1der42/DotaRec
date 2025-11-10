@@ -8,6 +8,8 @@ import '../../styles/ShopPage.css';
 const CardChoiceModal = ({ cards, onClose, onProcessCards, myCollectionCardIds }) => {
   const [selectedCards, setSelectedCards] = useState(new Set());
   const [processing, setProcessing] = useState(false);
+  const [showPriceInput, setShowPriceInput] = useState(false);
+  const [marketplacePrice, setMarketplacePrice] = useState('');
 
   useEffect(() => {
     // Сразу автоматом отправляем в коллекцию все новые, которых нет в коллекции
@@ -51,60 +53,132 @@ const CardChoiceModal = ({ cards, onClose, onProcessCards, myCollectionCardIds }
         return;
       }
     }
+    if (action === 'marketplace') {
+      setShowPriceInput(true);
+      return;
+    }
     setProcessing(true);
     const cardsToProcess = cards.filter(c => selectedCards.has(c._id));
     await onProcessCards(cardsToProcess, action);
     setProcessing(false);
   };
 
+  const handleMarketplaceListing = async () => {
+    if (!marketplacePrice || marketplacePrice < 1) {
+      alert('Укажите цену (минимум 1 коин)');
+      return;
+    }
+    setProcessing(true);
+    const cardsToProcess = cards.filter(c => selectedCards.has(c._id));
+    await onProcessCards(cardsToProcess, 'marketplace', parseInt(marketplacePrice));
+    setProcessing(false);
+    setShowPriceInput(false);
+    setMarketplacePrice('');
+  };
+
   if (!cards || cards.length === 0) {
     return null;
   }
+
+  const hasOnlyDuplicates = cards.every(card => isDuplicate(card._id));
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content card-choice-modal" onClick={(e) => e.stopPropagation()}>
         <h2>Поздравляем! Ваш улов:</h2>
-        <p className="choice-instruction">Выберите карточки и решите, что с ними делать:</p>
+        <p className="choice-instruction">
+          {hasOnlyDuplicates 
+            ? 'Все карточки уже есть в коллекции. Выберите действие:'
+            : 'Выберите карточки и решите, что с ними делать:'}
+        </p>
         <div className="opened-cards-container">
-          {cards.map((player) => (
-            <div 
-              key={player._id} 
-              className={`card-choice-item ${selectedCards.has(player._id) ? 'selected' : ''}`}
-              onClick={() => toggleCard(player._id)}
-            >
-              <PlayerCard player={player} isClickable={false} />
-              <div className="card-selection-checkbox">
-                {selectedCards.has(player._id) ? '✓' : ''}
+          {cards.map((player) => {
+            const isCardDuplicate = isDuplicate(player._id);
+            return (
+              <div 
+                key={player._id} 
+                className={`card-choice-item ${selectedCards.has(player._id) ? 'selected' : ''} ${isCardDuplicate ? 'duplicate' : ''}`}
+                onClick={() => toggleCard(player._id)}
+              >
+                <PlayerCard player={player} isClickable={false} />
+                {isCardDuplicate && <div className="duplicate-badge">Дубликат</div>}
+                <div className="card-selection-checkbox">
+                  {selectedCards.has(player._id) ? '✓' : ''}
+                </div>
               </div>
+            );
+          })}
+        </div>
+
+        {!showPriceInput ? (
+          <div className="card-choice-actions">
+            {!hasOnlyDuplicates && (
+              <button 
+                onClick={() => handleProcessCards('collection')} 
+                className="choice-btn collection-btn"
+                disabled={
+                  processing || selectedCards.size === 0 || Array.from(selectedCards).some(cardId => myCollectionCardIds.includes(cardId))
+                }
+              >
+                В коллекцию ({selectedCards.size})
+              </button>
+            )}
+            <button 
+              onClick={() => handleProcessCards('storage')} 
+              className="choice-btn storage-btn"
+              disabled={processing || selectedCards.size === 0}
+            >
+              В хранилище ({selectedCards.size})
+            </button>
+            <button 
+              onClick={() => handleProcessCards('sell')} 
+              className="choice-btn sell-btn"
+              disabled={processing || selectedCards.size === 0}
+            >
+              Быстрая продажа ({selectedCards.size})
+            </button>
+            <button 
+              onClick={() => handleProcessCards('marketplace')} 
+              className="choice-btn marketplace-btn"
+              disabled={processing || selectedCards.size === 0}
+            >
+              Выставить на ТП ({selectedCards.size})
+            </button>
+          </div>
+        ) : (
+          <div className="marketplace-price-section">
+            <h3>Укажите цену за каждую карточку</h3>
+            <input
+              type="number"
+              value={marketplacePrice}
+              onChange={(e) => setMarketplacePrice(e.target.value)}
+              placeholder="Цена в коинах"
+              min="1"
+              className="marketplace-price-input"
+              autoFocus
+            />
+            <div className="card-choice-actions">
+              <button 
+                onClick={handleMarketplaceListing} 
+                className="choice-btn confirm-btn"
+                disabled={processing}
+              >
+                Выставить
+              </button>
+              <button 
+                onClick={() => {
+                  setShowPriceInput(false);
+                  setMarketplacePrice('');
+                }} 
+                className="choice-btn cancel-btn"
+                disabled={processing}
+              >
+                Назад
+              </button>
             </div>
-          ))}
-        </div>
-        <div className="card-choice-actions">
-          <button 
-            onClick={() => handleProcessCards('collection')} 
-            className="choice-btn collection-btn"
-            disabled={
-              processing || selectedCards.size === 0 || Array.from(selectedCards).some(cardId => myCollectionCardIds.includes(cardId))
-            }
-          >
-            В коллекцию ({selectedCards.size})
-          </button>
-          <button 
-            onClick={() => handleProcessCards('storage')} 
-            className="choice-btn storage-btn"
-            disabled={processing || selectedCards.size === 0}
-          >
-            В хранилище ({selectedCards.size})
-          </button>
-          <button 
-            onClick={() => handleProcessCards('sell')} 
-            className="choice-btn sell-btn"
-            disabled={processing || selectedCards.size === 0}
-          >
-            Продать ({selectedCards.size})
-          </button>
-        </div>
+          </div>
+        )}
+
         <button onClick={onClose} className="modal-close-btn">
           Отмена
         </button>
@@ -171,25 +245,41 @@ const ShopPage = ({ packs, userCoins, onOpenPack, onAddCoins }) => {
     setIsOpening(false);
   };
 
-  const handleProcessCards = async (cards, action) => {
+  const handleProcessCards = async (cards, action, price = null) => {
     try {
-      const { data } = await api.post('/api/profile/process-cards', {
-        cards: cards.map(c => ({ _id: c._id })),
-        action
-      });
-      
-      await updateUser({ coins: data.newBalance });
-      
-      if (action === 'sell') {
-        alert(`Карточки проданы! Получено: ${data.coinsEarned} коинов`);
-      } else if (action === 'collection') {
-        alert('Карточки добавлены в коллекцию!');
-      } else if (action === 'storage') {
-        alert('Карточки добавлены в хранилище!');
+      if (action === 'marketplace') {
+        // Выставляем карточки на торговую площадку
+        for (const card of cards) {
+          await api.post('/api/marketplace', {
+            cardId: card._id,
+            price: price
+          });
+        }
+        alert(`${cards.length} карточек выставлено на продажу!`);
+      } else {
+        // Обычная обработка (коллекция, хранилище, продажа)
+        const { data } = await api.post('/api/profile/process-cards', {
+          cards: cards.map(c => ({ _id: c._id })),
+          action
+        });
+        
+        await updateUser({ coins: data.newBalance });
+        
+        if (action === 'sell') {
+          alert(`Карточки проданы! Получено: ${data.coinsEarned} коинов`);
+        } else if (action === 'collection') {
+          alert('Карточки добавлены в коллекцию!');
+        } else if (action === 'storage') {
+          alert('Карточки добавлены в хранилище!');
+        }
       }
       
       setShowChoiceModal(false);
       setOpenedCards(null);
+      
+      // Обновляем коллекцию пользователя
+      const { data: collectionData } = await api.get('/api/profile/collection');
+      setUserCollection(collectionData.map(card => card._id));
     } catch (error) {
       alert(`Ошибка: ${error.response?.data?.message || error.message}`);
     }

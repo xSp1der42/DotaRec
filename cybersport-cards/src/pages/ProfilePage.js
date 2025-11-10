@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import { getFullImageUrl } from '../utils/imageUtils';
 import PlayerCard from '../components/cards/PlayerCard';
+import CardDetailModal from '../components/cards/CardDetailModal';
 import LockedCard from '../components/cards/LockedCard';
 import Loader from '../components/shared/Loader';
 import ProfileSettings from '../components/profile/ProfileSettings';
@@ -35,6 +36,8 @@ const ProfilePage = () => {
     const [sortBy, setSortBy] = useState('collected');
     const [currentSeason, setCurrentSeason] = useState(null);
     const [selectedSeason, setSelectedSeason] = useState(null);
+    const [selectedCard, setSelectedCard] = useState(null);
+    const [showCardModal, setShowCardModal] = useState(false);
     
     const isOwner = useMemo(() => currentUser?.id === userId, [currentUser, userId]);
 
@@ -79,22 +82,42 @@ const ProfilePage = () => {
         setSelectedSeason(seasonNumber);
     };
 
-    const handleSeasonCleanInventory = async (seasonNumber) => {
+    const handleCardClick = (card) => {
         if (!isOwner) return;
-        if (!window.confirm('Внимание! При переходе на новый сезон весь инвентарь будет очищен. Сбросить?')) return;
+        if (!card.isCollected) return; // Только собранные карточки
+        setSelectedCard(card);
+        setShowCardModal(true);
+    };
+
+    const handleCardQuickSell = async (cardId) => {
         try {
-            setLoading(true);
-            setError('');
-            // API-запрос для чистки инвентаря, либо эмулируем на клиенте:
-            await api.post(`/api/profile/${userId}/reset-inventory`, { season: seasonNumber })
-            // Перезагрузка профиля
-            const profileRes = await api.get(`/api/profile/${userId}?season=${seasonNumber}`);
+            const { data } = await api.post('/api/profile/process-cards', {
+                cards: [{ _id: cardId }],
+                action: 'sell'
+            });
+            
+            alert(`Карточка продана! Получено: ${data.coinsEarned} коинов`);
+            // Обновляем профиль
+            const profileRes = await api.get(`/api/profile/${userId}`);
             setProfileData(profileRes.data);
-            alert('Инвентарь очищен. Карточки других сезонов недоступны!');
-        } catch (err) {
-            setError('Не удалось очистить инвентарь: ' + (err.response?.data?.message || err.message));
-        } finally {
-            setLoading(false);
+        } catch (error) {
+            throw new Error(error.response?.data?.message || error.message);
+        }
+    };
+
+    const handleCardListOnMarketplace = async (cardId, price) => {
+        try {
+            await api.post('/api/marketplace', {
+                cardId: cardId,
+                price: price
+            });
+            
+            alert('Карточка выставлена на продажу!');
+            // Обновляем профиль
+            const profileRes = await api.get(`/api/profile/${userId}`);
+            setProfileData(profileRes.data);
+        } catch (error) {
+            throw new Error(error.response?.data?.message || error.message);
         }
     };
 
@@ -287,7 +310,12 @@ const ProfilePage = () => {
                             {displayedCards.map((card) => (
                                 <div key={card._id} className="inventory-item-wrapper">
                                     {card.isCollected ? (
-                                        <PlayerCard player={card} isClickable={false} currentSeason={selectedSeason || currentSeason} />
+                                        <PlayerCard 
+                                            player={card} 
+                                            isClickable={isOwner} 
+                                            onCardClick={() => handleCardClick(card)}
+                                            currentSeason={selectedSeason || currentSeason} 
+                                        />
                                     ) : (
                                         <LockedCard card={card} />
                                     )}
@@ -331,6 +359,19 @@ const ProfilePage = () => {
 
             {activeTab === 'settings' && isOwner && (
                 <ProfileSettings userProfile={profileData} />
+            )}
+
+            {showCardModal && selectedCard && (
+                <CardDetailModal
+                    card={selectedCard}
+                    onClose={() => {
+                        setShowCardModal(false);
+                        setSelectedCard(null);
+                    }}
+                    onQuickSell={handleCardQuickSell}
+                    onListOnMarketplace={handleCardListOnMarketplace}
+                    source="collection"
+                />
             )}
         </div>
     );

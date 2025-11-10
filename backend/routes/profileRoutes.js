@@ -25,6 +25,20 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Роут для получения коллекции пользователя (только ID карточек)
+router.get('/collection', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).populate('cardCollection').lean();
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json(user.cardCollection || []);
+    } catch (error) {
+        console.error("Error fetching user collection:", error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
 // Роут для получения своего профиля
 router.get('/', protect, async (req, res) => {
     try {
@@ -291,10 +305,12 @@ router.post('/process-cards', protect, async (req, res) => {
         
         for (const cardId of cardIds) {
             if (action === 'collection') {
-                // Добавляем в коллекцию только если такой карточки еще нет
-                if (!user.cardCollection.includes(cardId)) {
-                    user.cardCollection.push(cardId);
+                // Проверяем, есть ли уже такая карточка в коллекции
+                const hasInCollection = user.cardCollection.some(id => id.toString() === cardId.toString());
+                if (hasInCollection) {
+                    return res.status(400).json({ message: 'Эта карточка уже есть в коллекции' });
                 }
+                user.cardCollection.push(cardId);
             } else if (action === 'storage') {
                 // Добавляем в хранилище (максимум 100 карт)
                 if (user.storage.length < 100) {
