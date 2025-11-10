@@ -79,6 +79,25 @@ const ProfilePage = () => {
         setSelectedSeason(seasonNumber);
     };
 
+    const handleSeasonCleanInventory = async (seasonNumber) => {
+        if (!isOwner) return;
+        if (!window.confirm('Внимание! При переходе на новый сезон весь инвентарь будет очищен. Сбросить?')) return;
+        try {
+            setLoading(true);
+            setError('');
+            // API-запрос для чистки инвентаря, либо эмулируем на клиенте:
+            await api.post(`/api/profile/${userId}/reset-inventory`, { season: seasonNumber })
+            // Перезагрузка профиля
+            const profileRes = await api.get(`/api/profile/${userId}?season=${seasonNumber}`);
+            setProfileData(profileRes.data);
+            alert('Инвентарь очищен. Карточки других сезонов недоступны!');
+        } catch (err) {
+            setError('Не удалось очистить инвентарь: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Коллекция - только уникальные карточки (не стакаются)
     const cardCounts = useMemo(() => {
         if (!profileData?.collection) return new Map();
@@ -247,6 +266,14 @@ const ProfilePage = () => {
                             Настройки
                         </button>
                     </div>
+                    {isOwner && (
+                        <button className="season-reset-btn"
+                            onClick={() => handleSeasonCleanInventory(selectedSeason || currentSeason)}
+                            style={{ margin: '15px 0', background: '#b71c1c', color: '#fff', padding: '10px', border: 'none', borderRadius: '6px' }}
+                        >
+                            Сбросить инвентарь для этого сезона
+                        </button>
+                    )}
                 </>
             )}
             

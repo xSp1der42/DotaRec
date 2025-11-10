@@ -5,9 +5,11 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/ShopPage.css';
 
-const CardChoiceModal = ({ cards, onClose, onProcessCards }) => {
+const CardChoiceModal = ({ cards, onClose, onProcessCards, myCollectionCardIds }) => {
   const [selectedCards, setSelectedCards] = useState(new Set());
   const [processing, setProcessing] = useState(false);
+
+  const isDuplicate = (cardId) => myCollectionCardIds?.includes(cardId);
 
   const toggleCard = (cardId) => {
     setSelectedCards(prev => {
@@ -26,7 +28,14 @@ const CardChoiceModal = ({ cards, onClose, onProcessCards }) => {
       alert('Выберите хотя бы одну карточку');
       return;
     }
-    
+    if (action === 'collection') {
+      // Проверим, что не добавляем дубликаты
+      const hasDups = Array.from(selectedCards).some(cardId => isDuplicate(cardId));
+      if (hasDups) {
+        alert('В коллекции может быть только одна копия каждой карточки!');
+        return;
+      }
+    }
     setProcessing(true);
     const cardsToProcess = cards.filter(c => selectedCards.has(c._id));
     await onProcessCards(cardsToProcess, action);
@@ -60,7 +69,9 @@ const CardChoiceModal = ({ cards, onClose, onProcessCards }) => {
           <button 
             onClick={() => handleProcessCards('collection')} 
             className="choice-btn collection-btn"
-            disabled={processing || selectedCards.size === 0}
+            disabled={
+              processing || selectedCards.size === 0 || Array.from(selectedCards).some(cardId => isDuplicate(cardId))
+            }
           >
             В коллекцию ({selectedCards.size})
           </button>
@@ -198,6 +209,7 @@ const ShopPage = ({ packs, userCoins, onOpenPack, onAddCoins }) => {
           cards={openedCards} 
           onClose={handleCloseModal}
           onProcessCards={handleProcessCards}
+          myCollectionCardIds={userCoins.collection} // Передаем id карточек в коллекции
         />
       ) : (
         <PackOpeningModal cards={openedCards} onClose={handleCloseModal} />
