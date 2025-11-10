@@ -1,69 +1,70 @@
+// cybersport-cards/src/components/pickem/MatchCard.js
+
 import React from 'react';
 import '../../styles/MatchCard.css';
 
 const MatchCard = ({ match, userPick, onPick }) => {
   const isFinished = match.status === 'finished';
-  const isSelectable = match.status === 'upcoming';
-
-  const getCardBorderClass = () => {
-    if (!isFinished || !userPick) return '';
-    return userPick === match.winner ? 'picked-correct' : 'picked-incorrect';
-  };
-
-  const getFooterText = () => {
-    if (!userPick) return 'Сделайте свой прогноз';
-    if (!isFinished) return `Вы выбрали: ${userPick}`;
-    if (userPick === match.winner) return 'Ваш прогноз верен!';
-    return 'Ваш прогноз не сбылся';
-  };
+  const isLive = match.status === 'live';
+  const isUpcoming = match.status === 'upcoming';
   
-  const getFooterClass = () => {
-    if (!isFinished || !userPick) return '';
-    return userPick === match.winner ? 'correct' : 'incorrect';
+  const isPickable = isUpcoming && new Date(match.matchTime) > new Date(); // Проверяем, не прошло ли время матча
+
+  const getCardClassName = () => {
+    let className = 'match-card';
+    if (isLive) className += ' live';
+    if (isFinished) className += ' finished';
+    if (isFinished && userPick) {
+      className += userPick === match.winner ? ' picked-correct' : ' picked-incorrect';
+    }
+    return className;
   };
+
+  const Team = ({ team, isWinner, isPicked }) => (
+    <div 
+        className={`team-container ${isPickable ? 'selectable' : ''} ${isPicked ? 'selected' : ''} ${isWinner ? 'winner' : ''}`}
+        onClick={() => isPickable && onPick(match.id, team.name)}
+    >
+        <img src={team.logoUrl || '/path/to/default/logo.png'} alt={team.name} className="team-logo"/>
+        <span className="team-name">{team.name}</span>
+    </div>
+  );
 
   return (
-    <div className={`match-card ${getCardBorderClass()}`}>
+    <div className={getCardClassName()}>
+      {isLive && <div className="status-overlay">LIVE</div>}
+      {!isPickable && isUpcoming && <div className="status-overlay locked">LOCKED</div>}
+      
       <div className="match-header">
         <span>{new Date(match.matchTime).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
         <span>{match.boFormat}</span>
       </div>
 
-      {isFinished && match.maps && (
-        <div className="map-results">
-          {match.maps.map((map, index) => (
-            <div key={index} className="map-item">
-              <div className="map-name">{map.name}</div>
-              <div className="map-score">{map.teamAScore} - {map.teamBScore}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
       <div className="match-body">
-        <div 
-          className={`team-container ${isSelectable ? 'selectable' : ''} ${userPick === match.teamA.name ? 'selected' : ''}`}
-          onClick={() => isSelectable && onPick(match.id, match.teamA.name)}
-        >
-          <img src={match.teamA.logoUrl} alt={match.teamA.name} className="team-logo"/>
-          <span className="team-name">{match.teamA.name}</span>
-        </div>
+        <Team 
+          team={match.teamA} 
+          isWinner={isFinished && match.winner === match.teamA.name} 
+          isPicked={userPick === match.teamA.name} 
+        />
 
         <div className="final-score">
           {isFinished ? `${match.teamA.score}:${match.teamB.score}` : 'VS'}
         </div>
+        
+        <Team 
+          team={match.teamB} 
+          isWinner={isFinished && match.winner === match.teamB.name} 
+          isPicked={userPick === match.teamB.name} 
+        />
+      </div>
 
-        <div 
-          className={`team-container ${isSelectable ? 'selectable' : ''} ${userPick === match.teamB.name ? 'selected' : ''}`}
-          onClick={() => isSelectable && onPick(match.id, match.teamB.name)}
-        >
-          <img src={match.teamB.logoUrl} alt={match.teamB.name} className="team-logo"/>
-          <span className="team-name">{match.teamB.name}</span>
+      {isFinished && (
+        <div className="match-footer">
+          {userPick ? 
+            (userPick === match.winner ? 'Прогноз верен!' : 'Прогноз не сбылся') 
+            : 'Вы не делали прогноз'}
         </div>
-      </div>
-      <div className={`match-footer ${getFooterClass()}`}>
-        {getFooterText()}
-      </div>
+      )}
     </div>
   );
 };
