@@ -13,20 +13,20 @@ yarn-error.log*
 # ПРАВИЛА ДЛЯ FRONTEND (cybersport-cards)
 # ==================================
 # Зависимости
-/cybersport-cards/node_modules
+node_modules
 
 # Сборка для продакшена
-/cybersport-cards/build
+build
 
 # Файлы окружения
-/cybersport-cards/.env
-/cybersport-cards/.env.local
-/cybersport-cards/.env.development.local
-/cybersport-cards/.env.test.local
-/cybersport-cards/.env.production.local
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Тесты
-/cybersport-cards/coverage
+coverage
 
 # ==================================
 # ПРАВИЛА ДЛЯ BACKEND (backend)
