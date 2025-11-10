@@ -1,5 +1,3 @@
-// cybersport-cards/src/pages/MarketplacePage.js
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import PlayerCard from '../components/cards/PlayerCard';
 import api from '../services/api';
@@ -152,7 +150,7 @@ const MarketplacePage = () => {
             <div className="search-section">
               <input
                 type="text"
-                placeholder="Поиск по имени игрока..."
+                placeholder="Поиск по имени игрока или команде..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="marketplace-search"
@@ -160,6 +158,19 @@ const MarketplacePage = () => {
             </div>
 
             <div className="filter-section">
+              <div className="filter-group">
+                <label>Сортировать:</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="newest">Популярность ↓</option>
+                  <option value="price_asc">Цена ↑</option>
+                  <option value="price_desc">Цена ↓</option>
+                </select>
+              </div>
+
               <div className="filter-group">
                 <label>Редкость:</label>
                 <select
@@ -183,23 +194,10 @@ const MarketplacePage = () => {
                   onChange={(e) => setFilterTeam(e.target.value)}
                   className="filter-select"
                 >
-                  <option value="all">Все команды</option>
+                  <option value="all">All Teams</option>
                   {uniqueTeams.map(team => (
                     <option key={team} value={team}>{team}</option>
                   ))}
-                </select>
-              </div>
-
-              <div className="filter-group">
-                <label>Сортировка:</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="filter-select"
-                >
-                  <option value="newest">Новые</option>
-                  <option value="price_asc">Цена: по возрастанию</option>
-                  <option value="price_desc">Цена: по убыванию</option>
                 </select>
               </div>
             </div>
@@ -213,9 +211,6 @@ const MarketplacePage = () => {
             </p>
           ) : (
             <>
-              <div className="marketplace-stats">
-                Найдено объявлений: {filteredListings.length}
-              </div>
               <div className="marketplace-grid">
                 {filteredListings.map((listing) => (
                   <div key={listing._id} className="marketplace-item">

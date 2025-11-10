@@ -51,17 +51,17 @@
 }
 
 .marketplace-tab-btn.active {
-  background-color: #4a90e2;
+  background-color: #5a67d8;
   color: white;
-  border-color: #4a90e2;
+  border-color: #5a67d8;
 }
 
 .marketplace-controls {
-  background-color: #2c3040;
-  padding: 20px;
+  background-color: #2a2f42;
+  padding: 25px;
   border-radius: 12px;
   margin-bottom: 30px;
-  border: 2px solid #3a3e52;
+  border: 1px solid #3a3e52;
 }
 
 .search-section {
@@ -70,18 +70,19 @@
 
 .marketplace-search {
   width: 100%;
-  padding: 14px 20px;
-  font-size: 16px;
-  background-color: #1a1d2e;
+  padding: 12px 18px;
+  font-size: 15px;
+  background-color: #1e2332;
   color: white;
-  border: 2px solid #3a3e52;
+  border: 1px solid #3a3e52;
   border-radius: 8px;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
 
 .marketplace-search:focus {
   outline: none;
-  border-color: #4a90e2;
+  border-color: #5a67d8;
+  background-color: #252b3d;
 }
 
 .marketplace-search::placeholder {
@@ -90,44 +91,48 @@
 
 .filter-section {
   display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 15px;
+  align-items: flex-end;
 }
 
 .filter-group {
-  flex: 1;
-  min-width: 200px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .filter-group label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: #a9b1bd;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #8b92a8;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .filter-select {
-  padding: 12px 16px;
-  font-size: 15px;
-  background-color: #1a1d2e;
+  padding: 10px 14px;
+  font-size: 14px;
+  background-color: #1e2332;
   color: white;
-  border: 2px solid #3a3e52;
-  border-radius: 8px;
+  border: 1px solid #3a3e52;
+  border-radius: 6px;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
+  min-width: 180px;
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #4a90e2;
+  border-color: #5a67d8;
+  background-color: #252b3d;
+}
+
+.filter-select:hover {
+  border-color: #4a5068;
 }
 
 .filter-select option {
-  background-color: #1a1d2e;
+  background-color: #1e2332;
   color: white;
 }
 

@@ -8,7 +8,6 @@ import LockedCard from '../components/cards/LockedCard';
 import Loader from '../components/shared/Loader';
 import ProfileSettings from '../components/profile/ProfileSettings';
 import StorageTab from '../components/profile/StorageTab';
-import MarketplaceTab from '../components/profile/MarketplaceTab';
 import SeasonSelector from '../components/profile/SeasonSelector';
 import { useAuth } from '../context/AuthContext';
 import '../styles/ProfilePage.css';
@@ -277,12 +276,6 @@ const ProfilePage = () => {
                             Хранилище ({stats.storageCount}/100)
                         </button>
                         <button 
-                            className={`tab-button ${activeTab === 'marketplace' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('marketplace')}
-                        >
-                            Торговая площадка
-                        </button>
-                        <button 
                             className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
                             onClick={() => setActiveTab('settings')}
                         >
@@ -335,18 +328,6 @@ const ProfilePage = () => {
                 <StorageTab 
                     storage={profileData?.storage || []}
                     allCards={profileData?.allPossibleCards || []}
-                    onUpdate={() => {
-                        // Обновляем профиль
-                        api.get(`/api/profile/${userId}`).then(({ data }) => {
-                            setProfileData(data);
-                        });
-                    }}
-                    currentSeason={selectedSeason || currentSeason}
-                />
-            )}
-
-            {activeTab === 'marketplace' && isOwner && (
-                <MarketplaceTab 
                     onUpdate={() => {
                         // Обновляем профиль
                         api.get(`/api/profile/${userId}`).then(({ data }) => {
