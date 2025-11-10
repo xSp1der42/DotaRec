@@ -136,10 +136,26 @@ const PackOpeningModal = ({ cards, onClose }) => {
 };
 
 const ShopPage = ({ packs, userCoins, onOpenPack, onAddCoins }) => {
-  const { updateUser } = useAuth();
+  const { updateUser, user } = useAuth();
   const [openedCards, setOpenedCards] = useState(null);
   const [isOpening, setIsOpening] = useState(false);
   const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [userCollection, setUserCollection] = useState([]);
+
+  // Загружаем коллекцию пользователя
+  useEffect(() => {
+    const fetchUserCollection = async () => {
+      if (user) {
+        try {
+          const { data } = await api.get('/api/profile/collection');
+          setUserCollection(data.map(card => card._id));
+        } catch (error) {
+          console.error('Ошибка загрузки коллекции:', error);
+        }
+      }
+    };
+    fetchUserCollection();
+  }, [user]);
 
   const handleOpenPackClick = async (pack) => {
     if (isOpening) return;
@@ -224,7 +240,7 @@ const ShopPage = ({ packs, userCoins, onOpenPack, onAddCoins }) => {
           cards={openedCards} 
           onClose={handleCloseModal}
           onProcessCards={handleProcessCards}
-          myCollectionCardIds={userCoins.collection} // Передаем id карточек в коллекции
+          myCollectionCardIds={userCollection}
         />
       ) : (
         <PackOpeningModal cards={openedCards} onClose={handleCloseModal} />

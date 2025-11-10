@@ -266,14 +266,6 @@ const ProfilePage = () => {
                             Настройки
                         </button>
                     </div>
-                    {isOwner && (
-                        <button className="season-reset-btn"
-                            onClick={() => handleSeasonCleanInventory(selectedSeason || currentSeason)}
-                            style={{ margin: '15px 0', background: '#b71c1c', color: '#fff', padding: '10px', border: 'none', borderRadius: '6px' }}
-                        >
-                            Сбросить инвентарь для этого сезона
-                        </button>
-                    )}
                 </>
             )}
             
