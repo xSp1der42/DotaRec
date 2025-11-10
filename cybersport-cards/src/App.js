@@ -24,6 +24,7 @@ import Loader from './components/shared/Loader';
 // Страницы
 import PlayerDetailPage from './pages/PlayerDetailPage';
 import ProfilePage from './pages/ProfilePage';
+import MarketplacePage from './pages/MarketplacePage';
 
 // Layout
 import AdminLayout from './components/admin/AdminLayout';
@@ -299,10 +300,9 @@ function App() {
                 <nav className="main-nav">
                     <NavLink to="/" end className={getNavLinkClass}>Карточки</NavLink>
                     <NavLink to="/shop" className={getNavLinkClass}>Магазин</NavLink>
+                    <NavLink to="/marketplace" className={getNavLinkClass}>Торговая площадка</NavLink>
                     <NavLink to="/pickem" className={getNavLinkClass}>Pick'em</NavLink>
-                    {/* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */}
                     <NavLink to="/fantasy" className={getNavLinkClass}>Фэнтези</NavLink>
-                    {/* --- КОНЕЦ ИЗМЕНЕНИЯ --- */}
                 </nav>
                 <div className="header-right">
                     {user && <NavLink to={`/profile/${user.id}`} className="nav-button user-profile-link">Профиль</NavLink>}
@@ -337,12 +337,9 @@ function App() {
                     } />
                     <Route path="/player/:playerId" element={<PlayerDetailWrapper />} />
                     <Route path="/shop" element={<ShopPage packs={packs} userCoins={user?.coins || 0} onOpenPack={handleOpenPack} onAddCoins={handleAddCoins} />} />
+                    <Route path="/marketplace" element={<MarketplacePage />} />
                     <Route path="/pickem" element={<PickemPage events={pickemEvents} userPicks={userPicks} onPick={handleUserPick} />} />
-                    
-                    {/* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */}
                     <Route path="/fantasy" element={<FantasyPage />} />
-                    {/* --- КОНЕЦ ИЗМЕНЕНИЯ --- */}
-                    
                     <Route path="/profile/:userId" element={<ProfilePage />} />
                     
                     <Route path="/login" element={<LoginPage />} />
