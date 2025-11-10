@@ -41,8 +41,21 @@ const StorageTab = ({ storage, allCards, onUpdate }) => {
     return cards;
   }, [storage, allCards]);
 
+  // 1. Фильтрация только по текущему сезону (через props/profie, иначе берём все)
+  const currentSeason = allCards && allCards[0] ? allCards[0].season : null;
+  const filteredStorageCards = useMemo(() => {
+    if (!currentSeason) return storageCards;
+    return storageCards.filter(card => card.season === currentSeason);
+  }, [storageCards, currentSeason]);
+
   const displayedCards = useMemo(() => {
-    let sorted = [...storageCards];
+    let sorted = [...filteredStorageCards];
+    const uniqueIds = new Set();
+    sorted = sorted.filter(card => {
+      if (uniqueIds.has(card._id)) return false;
+      uniqueIds.add(card._id);
+      return true;
+    });
     
     switch (sortBy) {
       case 'ovr_desc':
@@ -59,7 +72,7 @@ const StorageTab = ({ storage, allCards, onUpdate }) => {
     }
     
     return sorted;
-  }, [storageCards, sortBy]);
+  }, [filteredStorageCards, sortBy]);
 
   const toggleCard = (cardId) => {
     setSelectedCards(prev => {

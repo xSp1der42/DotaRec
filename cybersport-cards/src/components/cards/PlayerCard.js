@@ -51,13 +51,15 @@ const PlayerCard = ({ player, onCardClick, isClickable = true }) => {
   // Преобразуем объект статов в массив для удобного рендеринга
   const statItems = stats ? Object.entries(stats) : [];
 
+  const isCurrentSeason = !('season' in player) || player.season === currentSeason ? '' : 'disabled';
+
   return (
     <div
-      className={`card-final ${rarity || 'common'} ${isClickable ? 'clickable' : ''}`}
+      className={`card-final ${rarity || 'common'} ${isClickable ? 'clickable' : ''} ${isCurrentSeason}`}
       onClick={handleCardClick}
     >
         {/* Фото игрока на заднем фоне */}
-        <img src={getFullImageUrl(image_url)} alt={nickname} className="card-final-photo" />
+        <img src={getFullImageUrl(player.image_url)} alt={nickname} className="card-final-photo" />
 
         {/* Контент поверх фото */}
         <div className="card-final-content">

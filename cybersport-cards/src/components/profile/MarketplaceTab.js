@@ -1,6 +1,6 @@
 // cybersport-cards/src/components/profile/MarketplaceTab.js
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import PlayerCard from '../cards/PlayerCard';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -80,6 +80,12 @@ const MarketplaceTab = ({ onUpdate }) => {
     }
   };
 
+  const currentSeason = user?.season || listings[0]?.card?.season || null;
+  const filteredListings = useMemo(() => {
+    if (!currentSeason) return listings;
+    return listings.filter(listing => listing.card.season === currentSeason);
+  }, [listings, currentSeason]);
+
   if (loading) {
     return <div className="marketplace-loading">Загрузка...</div>;
   }
@@ -132,13 +138,13 @@ const MarketplaceTab = ({ onUpdate }) => {
             </div>
           </div>
 
-          {listings.length === 0 ? (
+          {filteredListings.length === 0 ? (
             <p className="empty-marketplace-message">
               На торговой площадке пока нет объявлений.
             </p>
           ) : (
             <div className="marketplace-grid">
-              {listings.map((listing) => (
+              {filteredListings.map((listing) => (
                 <div key={listing._id} className="marketplace-item">
                   <PlayerCard player={listing.card} isClickable={false} />
                   <div className="listing-info">

@@ -321,6 +321,7 @@ const ProfilePage = () => {
                             setProfileData(data);
                         });
                     }}
+                    currentSeason={selectedSeason || currentSeason}
                 />
             )}
 
@@ -332,6 +333,7 @@ const ProfilePage = () => {
                             setProfileData(data);
                         });
                     }}
+                    currentSeason={selectedSeason || currentSeason}
                 />
             )}
 
