@@ -30,7 +30,7 @@ const formatStatName = (camelCaseStr) => {
     return result.charAt(0).toUpperCase() + result.slice(1);
 };
 
-const PlayerCard = ({ player, onCardClick, isClickable = true }) => {
+const PlayerCard = ({ player, onCardClick, isClickable = true, currentSeason }) => {
   const {
     ovr,
     image_url,

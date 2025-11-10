@@ -295,7 +295,7 @@ const ProfilePage = () => {
                             {displayedCards.map((card) => (
                                 <div key={card._id} className="inventory-item-wrapper">
                                     {card.isCollected ? (
-                                        <PlayerCard player={card} isClickable={false} />
+                                        <PlayerCard player={card} isClickable={false} currentSeason={selectedSeason || currentSeason} />
                                     ) : (
                                         <LockedCard card={card} />
                                     )}

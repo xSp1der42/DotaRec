@@ -232,7 +232,7 @@ const StorageTab = ({ storage, allCards, onUpdate }) => {
                 className={`storage-item ${selectedCards.has(cardId) ? 'selected' : ''}`}
                 onClick={() => toggleCard(cardId)}
               >
-                <PlayerCard player={card} isClickable={false} />
+                <PlayerCard player={card} isClickable={false} currentSeason={currentSeason} />
                 {selectedCards.has(cardId) && (
                   <div className="storage-selection-checkbox">✓</div>
                 )}

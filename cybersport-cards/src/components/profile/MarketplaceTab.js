@@ -146,7 +146,7 @@ const MarketplaceTab = ({ onUpdate }) => {
             <div className="marketplace-grid">
               {filteredListings.map((listing) => (
                 <div key={listing._id} className="marketplace-item">
-                  <PlayerCard player={listing.card} isClickable={false} />
+                  <PlayerCard player={listing.card} isClickable={false} currentSeason={currentSeason} />
                   <div className="listing-info">
                     <div className="seller-info">
                       <img
@@ -188,7 +188,7 @@ const MarketplaceTab = ({ onUpdate }) => {
                 .filter(l => l.status === 'active')
                 .map((listing) => (
                   <div key={listing._id} className="marketplace-item">
-                    <PlayerCard player={listing.card} isClickable={false} />
+                    <PlayerCard player={listing.card} isClickable={false} currentSeason={currentSeason} />
                     <div className="listing-info">
                       <div className="listing-price">
                         {listing.price.toLocaleString('ru-RU')} коинов
