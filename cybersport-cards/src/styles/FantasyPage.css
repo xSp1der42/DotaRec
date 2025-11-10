@@ -1,0 +1,95 @@
+/* cybersport-cards/src/styles/FantasyPage.css */
+
+.fantasy-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  color: #f0f0f0;
+  text-align: center;
+}
+
+.fantasy-page h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.roster-lock-timer {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+}
+
+.my-team-display h2,
+.leaderboard-placeholder h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #4CAF50;
+  padding-bottom: 10px;
+}
+
+.team-slots {
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.player-slot {
+  background-color: #2a2a2e;
+  padding: 20px;
+  border-radius: 10px;
+  width: 30%;
+  border: 1px solid #444;
+}
+
+.player-slot h3 {
+  margin-top: 0;
+  font-size: 1.3rem;
+  color: #4CAF50;
+}
+
+.player-slot p {
+  font-size: 1.5rem;
+  font-weight: bold;
+  min-height: 30px;
+}
+
+.create-team-section,
+.login-prompt {
+  padding: 40px;
+  background-color: #2a2a2e;
+  border-radius: 10px;
+  margin: 40px 0;
+}
+
+.fantasy-button {
+  background-color: #3d3d42;
+  color: #f0f0f0;
+  border: 1px solid #555;
+  padding: 12px 25px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.fantasy-button:hover {
+  background-color: #4a4a50;
+  transform: translateY(-2px);
+}
+
+.fantasy-button.primary {
+  background-color: #4CAF50;
+  border-color: #4CAF50;
+  color: white;
+}
+
+.fantasy-button.primary:hover {
+  background-color: #5cb85c;
+}

@@ -1,0 +1,125 @@
+.pack-form .player-pool-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    background-color: #1e1e2f;
+    padding: 15px;
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #4a4a68;
+}
+
+.player-pool-item {
+    padding: 10px;
+    background-color: #2a2a3e;
+    color: #c3dafe;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border: 2px solid transparent;
+}
+
+.player-pool-item:hover {
+    background-color: #4a4a68;
+}
+
+.player-pool-item.selected {
+    background-color: #5a67d8;
+    color: white;
+    font-weight: bold;
+    border-color: #c3dafe;
+}
+
+.pool-notice {
+    font-size: 0.9em;
+    color: #a9a9c9;
+    margin-bottom: 15px;
+    background-color: #2a2a3e;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.pack-item-admin .info strong {
+    color: #2ed573; /* Зеленый для паков */
+}
+.pack-form .player-pool-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    background-color: #1e1e2f;
+    padding: 15px;
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #4a4a68;
+}
+
+.player-pool-item {
+    padding: 10px;
+    background-color: #2a2a3e;
+    color: #c3dafe;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border: 2px solid transparent;
+}
+
+.player-pool-item:hover {
+    background-color: #4a4a68;
+}
+
+.player-pool-item.selected {
+    background-color: #5a67d8;
+    color: white;
+    font-weight: bold;
+    border-color: #c3dafe;
+}
+
+.pool-notice {
+    font-size: 0.9em;
+    color: #a9a9c9;
+    margin-bottom: 15px;
+    background-color: #2a2a3e;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.pack-item-admin .info strong {
+    color: #2ed573;
+}
+
+/* --- НОВЫЕ СТИЛИ ДЛЯ ВЫДАЧИ КОИНОВ --- */
+.admin-issue-coins {
+    background-color: #1e1e2f;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    border: 1px solid #4a4a68;
+}
+
+.admin-issue-coins h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    border-bottom: 1px solid #4a4a68;
+    padding-bottom: 10px;
+}
+
+.issue-coins-form {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.issue-coins-form input {
+    flex-grow: 1;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #4a4a68;
+    background-color: #2a2a3e;
+    color: #f0f0f0;
+}

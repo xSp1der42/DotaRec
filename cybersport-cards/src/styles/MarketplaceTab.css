@@ -1,0 +1,164 @@
+/* cybersport-cards/src/styles/MarketplaceTab.css */
+
+.marketplace-tab {
+  padding: 20px;
+}
+
+.marketplace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.marketplace-header h2 {
+  color: #c3dafe;
+  margin: 0;
+}
+
+.marketplace-tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.marketplace-tab-btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: #2a2a3e;
+  border: 1px solid #4a4a68;
+  border-radius: 8px;
+  color: #c3dafe;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.marketplace-tab-btn:hover {
+  background-color: #3a3a4e;
+  border-color: #5a67d8;
+}
+
+.marketplace-tab-btn.active {
+  background-color: #5a67d8;
+  border-color: #5a67d8;
+  color: white;
+}
+
+.marketplace-controls {
+  margin-bottom: 20px;
+}
+
+.marketplace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.marketplace-item {
+  background: linear-gradient(145deg, #2c2c44, #242438);
+  border: 1px solid #4a4a68;
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.marketplace-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(90, 103, 216, 0.3);
+  border-color: #5a67d8;
+}
+
+.listing-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.seller-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seller-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.seller-name {
+  color: #c3dafe;
+  font-size: 0.9rem;
+}
+
+.listing-price {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #f5a623;
+}
+
+.listing-status {
+  color: #a9a9c9;
+  font-size: 0.9rem;
+}
+
+.buy-btn {
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.buy-btn:hover:not(:disabled) {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+.buy-btn:disabled {
+  background-color: #6e6e80;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.cancel-listing-btn {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  background-color: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cancel-listing-btn:hover {
+  background-color: #e64a19;
+  transform: translateY(-2px);
+}
+
+.empty-marketplace-message {
+  text-align: center;
+  color: #a9a9c9;
+  font-size: 1.2rem;
+  padding: 40px;
+}
+
+.marketplace-loading {
+  text-align: center;
+  color: #c3dafe;
+  font-size: 1.2rem;
+  padding: 40px;
+}
+

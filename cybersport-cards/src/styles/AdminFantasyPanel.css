@@ -1,0 +1,529 @@
+/* cybersport-cards/src/styles/AdminFantasyPanel.css */
+
+.admin-fantasy-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+/* Стили для инструкции */
+.fantasy-instructions {
+    background: linear-gradient(135deg, #1e3a1e 0%, #2a2a2e 100%);
+    border: 2px solid #4CAF50;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.fantasy-instructions h2 {
+    color: #4CAF50;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.instructions-content {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.instruction-section {
+    background-color: rgba(30, 58, 30, 0.5);
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #4CAF50;
+}
+
+.instruction-section h3 {
+    color: #4CAF50;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.instruction-section p {
+    color: #ccc;
+    line-height: 1.6;
+    margin: 10px 0;
+}
+
+.instruction-section ol,
+.instruction-section ul {
+    color: #ccc;
+    line-height: 1.8;
+    padding-left: 25px;
+}
+
+.instruction-section li {
+    margin-bottom: 10px;
+}
+
+.instruction-section li strong {
+    color: #4CAF50;
+}
+
+.instruction-section ul {
+    list-style-type: disc;
+    margin-top: 10px;
+}
+
+.instruction-section ul li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-section {
+    background-color: #2a2a2e;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+.admin-section h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    color: #4CAF50;
+    border-bottom: 1px solid #444;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: #aaa;
+    text-transform: capitalize;
+}
+
+.form-group input[type="number"],
+.form-group input[type="text"],
+.form-group textarea {
+    width: 100%;
+    background-color: #1e1e24;
+    border: 1px solid #555;
+    color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.form-group textarea {
+    min-height: 150px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.save-settings-btn {
+    align-self: flex-start;
+    padding: 12px 30px;
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.save-settings-btn:hover {
+    background-color: #5cb85c;
+}
+
+.form-group small {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* Стили для табов в настройках */
+.settings-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #444;
+    padding-bottom: 10px;
+}
+
+.settings-tab {
+    padding: 12px 24px;
+    background-color: #1e1e24;
+    border: 1px solid #555;
+    border-bottom: none;
+    color: #aaa;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    top: 2px;
+}
+
+.settings-tab:hover {
+    background-color: #2a2a2e;
+    color: #f0f0f0;
+}
+
+.settings-tab.active {
+    background-color: #2a2a2e;
+    color: #4CAF50;
+    border-color: #4CAF50;
+    border-bottom: 2px solid #2a2a2e;
+}
+
+.settings-tab-content {
+    padding: 20px 0;
+    min-height: 200px;
+}
+
+.settings-tab-content h4 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+
+.settings-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #444;
+}
+
+/* Индикаторы цветов эмблем */
+.emblem-color-indicator {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.emblem-color-indicator.red {
+    background-color: #f44336;
+}
+
+.emblem-color-indicator.green {
+    background-color: #4CAF50;
+}
+
+.emblem-color-indicator.blue {
+    background-color: #2196F3;
+}
+
+/* Стили для бонусов */
+.bonus-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background-color: #1e1e24;
+    border-radius: 6px;
+}
+
+.bonus-row label {
+    min-width: 150px;
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.bonus-row input {
+    flex: 1;
+    max-width: 100px;
+    padding: 8px;
+    background-color: #2a2a2e;
+    border: 1px solid #555;
+    color: #f0f0f0;
+    border-radius: 4px;
+}
+
+.bonus-row span {
+    color: #4CAF50;
+    font-weight: bold;
+    min-width: 30px;
+}
+
+/* Стили для управления эмблемами */
+.emblem-form {
+    margin-bottom: 30px;
+}
+
+.form-group select {
+    width: 100%;
+    background-color: #1e1e24;
+    border: 1px solid #555;
+    color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.form-group input[type="file"] {
+    width: 100%;
+    background-color: #1e1e24;
+    border: 1px solid #555;
+    color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.cancel-btn {
+    padding: 12px 30px;
+    background-color: #666;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cancel-btn:hover {
+    background-color: #777;
+}
+
+.emblems-list {
+    margin-top: 30px;
+}
+
+.emblems-list h4 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.emblems-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.emblem-card {
+    background-color: #1e1e24;
+    border: 2px solid #444;
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.emblem-card:hover {
+    border-color: #4CAF50;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+.emblem-card.inactive {
+    opacity: 0.6;
+    border-color: #666;
+}
+
+.emblem-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #444;
+}
+
+.emblem-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.emblem-color.red {
+    background-color: #f44336;
+}
+
+.emblem-color.green {
+    background-color: #4CAF50;
+}
+
+.emblem-color.blue {
+    background-color: #2196F3;
+}
+
+.emblem-header h5 {
+    margin: 0;
+    color: #f0f0f0;
+    font-size: 1.1rem;
+    flex: 1;
+}
+
+.emblem-icon {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.emblem-details {
+    margin-bottom: 15px;
+}
+
+.emblem-details p {
+    margin: 8px 0;
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+.emblem-details strong {
+    color: #aaa;
+    margin-right: 8px;
+}
+
+.emblem-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.edit-btn {
+    flex: 1;
+    padding: 8px 16px;
+    background-color: #2196F3;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.edit-btn:hover {
+    background-color: #1976D2;
+}
+
+.emblem-actions .delete-btn {
+    flex: 1;
+    padding: 8px 16px;
+    background-color: #f44336;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.emblem-actions .delete-btn:hover {
+    background-color: #d32f2f;
+}
+
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.admin-form input[type="text"],
+.admin-form input[type="datetime-local"] {
+    background-color: #1e1e24;
+    border: 1px solid #555;
+    color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.admin-form label {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.admin-form button[type="submit"] {
+    padding: 12px 30px;
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    align-self: flex-start;
+}
+
+.admin-form button[type="submit"]:hover {
+    background-color: #5cb85c;
+}
+
+.admin-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #1e1e24;
+    border: 1px solid #444;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    color: #f0f0f0;
+    gap: 15px;
+}
+
+.admin-list li .delete-btn {
+    padding: 8px 16px;
+    background-color: #f44336;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.admin-list li .delete-btn:hover {
+    background-color: #d32f2f;
+}

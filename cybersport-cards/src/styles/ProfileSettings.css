@@ -1,0 +1,125 @@
+.profile-settings-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+  padding: 20px;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+.settings-form {
+  background-color: var(--bg-tertiary);
+  padding: 25px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  border: 1px solid var(--border-color);
+}
+
+.settings-form h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.5em;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.settings-form label {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.settings-form input[type="text"],
+.settings-form input[type="email"],
+.settings-form input[type="password"] {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 1em;
+  width: 100%;
+  box-sizing: border-box;
+}
+.settings-form input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.settings-form button {
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: opacity 0.2s;
+}
+.settings-form button:hover {
+    opacity: 0.9;
+}
+.settings-form button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+.privacy-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+.privacy-toggle label {
+    cursor: pointer;
+}
+
+/* Стили для загрузки аватара */
+.avatar-upload-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.avatar-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border-color);
+}
+input[type="file"] {
+    display: none;
+}
+.custom-file-upload {
+    display: inline-block;
+    padding: 10px 15px;
+    cursor: pointer;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+.custom-file-upload:hover {
+    background-color: var(--border-color);
+}
+
+/* Сообщения об успехе/ошибке */
+.settings-message {
+    grid-column: 1 / -1; /* Растягиваем на всю ширину грида */
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 500;
+}
+.settings-message.success {
+    background-color: rgba(46, 213, 115, 0.2);
+    color: #2ed573;
+}
+.settings-message.error {
+    background-color: rgba(255, 71, 87, 0.2);
+    color: #ff4757;
+}

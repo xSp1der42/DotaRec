@@ -1,0 +1,59 @@
+.crop-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.crop-modal-content {
+  background-color: var(--bg-secondary);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.crop-modal-content h3 {
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+/* Стили для самого компонента обрезки */
+.ReactCrop__image {
+    max-height: 70vh;
+}
+
+.crop-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.crop-modal-actions button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.crop-modal-actions .save-btn {
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+.crop-modal-actions .cancel-btn {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}

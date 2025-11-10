@@ -1,0 +1,73 @@
+/* src/styles/CoinPurchasePanel.css */
+.coin-purchase-panel {
+  background-color: #2a2a3e;
+  padding: 20px 30px;
+  border-radius: 12px;
+  margin-bottom: 40px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid #4a4a68;
+}
+
+.coin-purchase-panel h2 {
+  margin-top: 0;
+  font-size: 1.8em;
+  color: #fff;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.coin-packages-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.coin-package {
+  background-color: #1e1e2f;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #3c3c54;
+}
+
+.package-amount {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #f5a623;
+  margin-bottom: 10px;
+}
+
+.package-price {
+  font-size: 1.1em;
+  color: #a9a9c9;
+  margin-bottom: 20px;
+}
+
+.buy-coins-btn {
+  padding: 10px 25px;
+  font-size: 1em;
+  font-weight: bold;
+  background-color: #5a67d8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  margin-top: auto;
+}
+
+.buy-coins-btn:hover {
+  background-color: #4c58b6;
+}
+
+.payment-notice {
+  margin-top: 25px;
+  margin-bottom: 0;
+  color: #8a8aac;
+  font-size: 0.9em;
+  text-align: center;
+}

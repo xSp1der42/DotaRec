@@ -1,0 +1,192 @@
+/* cybersport-cards/src/styles/StorageTab.css */
+
+.storage-tab {
+  padding: 20px;
+}
+
+.storage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.storage-header h2 {
+  color: #c3dafe;
+  margin: 0;
+}
+
+.storage-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.move-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.move-btn:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+.sell-btn {
+  background-color: #f5a623;
+  color: white;
+}
+
+.sell-btn:hover {
+  background-color: #d8901c;
+  transform: translateY(-2px);
+}
+
+.quick-sell-btn {
+  background-color: #ff5722;
+  color: white;
+}
+
+.quick-sell-btn:hover {
+  background-color: #e64a19;
+  transform: translateY(-2px);
+}
+
+.storage-controls {
+  margin-bottom: 20px;
+}
+
+.storage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.storage-item {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 12px;
+  padding: 10px;
+  background-color: transparent;
+}
+
+.storage-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(90, 103, 216, 0.3);
+}
+
+.storage-item.selected {
+  background-color: rgba(90, 103, 216, 0.2);
+  border: 2px solid #5a67d8;
+}
+
+.storage-selection-checkbox {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 30px;
+  height: 30px;
+  background-color: #5a67d8;
+  border: 2px solid #5a67d8;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  z-index: 10;
+}
+
+.empty-storage-message {
+  text-align: center;
+  color: #a9a9c9;
+  font-size: 1.2rem;
+  padding: 40px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-content {
+  background-color: #1e1e2f;
+  padding: 30px;
+  border-radius: 15px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid #4a4a68;
+}
+
+.modal-content h3 {
+  color: #c3dafe;
+  margin-top: 0;
+}
+
+.price-input {
+  width: 100%;
+  padding: 12px;
+  margin: 20px 0;
+  background-color: #2a2a3e;
+  border: 1px solid #4a4a68;
+  border-radius: 8px;
+  color: #c3dafe;
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.confirm-btn, .cancel-btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.confirm-btn {
+  background-color: #5a67d8;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background-color: #4c58b6;
+}
+
+.cancel-btn {
+  background-color: #6e6e80;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #5a5a6a;
+}
+

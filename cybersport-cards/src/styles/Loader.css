@@ -1,0 +1,48 @@
+/* src/styles/Loader.css */
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  width: 100%;
+  height: 50vh; /* Занимает половину высоты видимой области */
+  color: #a9a9c9;
+  font-size: 1.2rem;
+}
+
+.loader-spinner {
+  border: 5px solid rgba(255, 255, 255, 0.2); /* Светлый ободок */
+  border-top: 5px solid #6c63ff; /* Фиолетовый цвет загрузки */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Стили для полноэкранного лоадера, который используется при загрузке сессии */
+.loading-fullscreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  font-size: 24px;
+  background-color: #1a1a21;
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}

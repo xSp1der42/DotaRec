@@ -1,0 +1,25 @@
+.minigame-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.minigame-page h1 {
+  font-size: 2.8em;
+  color: #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.minigame-page p {
+  font-size: 1.2em;
+  color: #b0b0b0;
+}
+
+.placeholder-content {
+  margin-top: 50px;
+  padding: 50px;
+  background-color: #2c2c38;
+  border-radius: 12px;
+  border: 1px dashed #4f4f5e;
+}

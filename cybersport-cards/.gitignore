@@ -1,0 +1,41 @@
+# ==================================
+# ОБЩИЕ ПРАВИЛА ДЛЯ ВСЕХ ПРОЕКТОВ
+# ==================================
+# Логи
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Системные файлы
+.DS_Store
+
+# ==================================
+# ПРАВИЛА ДЛЯ FRONTEND (cybersport-cards)
+# ==================================
+# Зависимости
+/cybersport-cards/node_modules
+
+# Сборка для продакшена
+/cybersport-cards/build
+
+# Файлы окружения
+/cybersport-cards/.env
+/cybersport-cards/.env.local
+/cybersport-cards/.env.development.local
+/cybersport-cards/.env.test.local
+/cybersport-cards/.env.production.local
+
+# Тесты
+/cybersport-cards/coverage
+
+# ==================================
+# ПРАВИЛА ДЛЯ BACKEND (backend)
+# ==================================
+# Зависимости
+/backend/node_modules
+
+# Файлы окружения (САМОЕ ВАЖНОЕ!)
+/backend/.env
+
+# Загруженные пользователями файлы (картинки)
+/backend/uploads/
