@@ -7,10 +7,9 @@ import { useAuth } from '../../context/AuthContext';
 import '../../styles/StorageTab.css';
 
 const StorageTab = ({ storage, allCards, onUpdate }) => {
-  const { user, updateUser } = useAuth();
+  const { updateUser } = useAuth();
   const [sortBy, setSortBy] = useState('ovr_desc');
   const [selectedCards, setSelectedCards] = useState(new Set());
-  const [action, setAction] = useState(null);
   const [price, setPrice] = useState('');
   const [showSellModal, setShowSellModal] = useState(false);
 
@@ -238,4 +237,3 @@ const StorageTab = ({ storage, allCards, onUpdate }) => {
 };
 
 export default StorageTab;
-

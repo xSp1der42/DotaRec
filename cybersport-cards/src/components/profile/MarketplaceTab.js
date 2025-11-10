@@ -1,6 +1,6 @@
 // cybersport-cards/src/components/profile/MarketplaceTab.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PlayerCard from '../cards/PlayerCard';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -15,14 +15,7 @@ const MarketplaceTab = ({ onUpdate }) => {
   const [activeView, setActiveView] = useState('browse'); // 'browse' or 'my'
   const [sortBy, setSortBy] = useState('newest');
 
-  useEffect(() => {
-    fetchListings();
-    if (user) {
-      fetchMyListings();
-    }
-  }, [user, sortBy]);
-
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await api.get(`/api/marketplace?sortBy=${sortBy}`);
@@ -32,16 +25,23 @@ const MarketplaceTab = ({ onUpdate }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sortBy]);
 
-  const fetchMyListings = async () => {
+  const fetchMyListings = useCallback(async () => {
     try {
       const { data } = await api.get('/api/marketplace/my/listings');
       setMyListings(data);
     } catch (error) {
       console.error('Error fetching my listings:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchListings();
+    if (user) {
+      fetchMyListings();
+    }
+  }, [user, fetchListings, fetchMyListings]);
 
   const handleBuy = async (listingId) => {
     if (!user) {
@@ -210,4 +210,3 @@ const MarketplaceTab = ({ onUpdate }) => {
 };
 
 export default MarketplaceTab;
-
