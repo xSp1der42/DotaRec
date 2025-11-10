@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Routes, Route, NavLink, useNavigate, useParams, Navigate } from 'react-router-dom';
 import api from './services/api';
 import { useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 // Компоненты
 import LoginPage from './components/auth/LoginPage';
@@ -17,6 +18,7 @@ import AdminPickemDashboard from './components/admin/AdminPickemDashboard';
 // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
 import FantasyPage from './components/fantasy/FantasyPage'; // <-- Импортируем новую страницу
 import AdminFantasyPanel from './components/admin/AdminFantasyPanel'; // <-- Импортируем новую админ-панель
+import AdminPredictorPanel from './components/admin/AdminPredictorPanel';
 // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 import FilterControls from './components/shared/FilterControls';
 import Loader from './components/shared/Loader';
@@ -25,9 +27,18 @@ import Loader from './components/shared/Loader';
 import PlayerDetailPage from './pages/PlayerDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import MarketplacePage from './pages/MarketplacePage';
+import PredictorPage from './pages/PredictorPage';
+import PredictorMatchPage from './pages/PredictorMatchPage';
+import PredictorHistoryPage from './pages/PredictorHistoryPage';
 
 // Layout
 import AdminLayout from './components/admin/AdminLayout';
+
+// Predictor Components
+import NotificationBell from './components/predictor/NotificationBell';
+
+// Shared Components
+import ToastContainer from './components/shared/ToastContainer';
 
 // Стили
 import './styles/App.css';
@@ -295,18 +306,22 @@ function App() {
     }
 
     return (
-        <div className="App">
-            <header className="app-header">
+        <NotificationProvider>
+            <div className="App">
+                <ToastContainer />
+                <header className="app-header">
                 <nav className="main-nav">
                     <NavLink to="/" end className={getNavLinkClass}>Карточки</NavLink>
                     <NavLink to="/shop" className={getNavLinkClass}>Магазин</NavLink>
                     <NavLink to="/marketplace" className={getNavLinkClass}>Торговая площадка</NavLink>
                     <NavLink to="/pickem" className={getNavLinkClass}>Pick'em</NavLink>
                     <NavLink to="/fantasy" className={getNavLinkClass}>Фэнтези</NavLink>
+                    <NavLink to="/predictor" className={getNavLinkClass}>Предсказания</NavLink>
                 </nav>
                 <div className="header-right">
                     {user && <NavLink to={`/profile/${user.id}`} className="nav-button user-profile-link">Профиль</NavLink>}
                     <div className="user-coins">{user ? `${(user.coins || 0).toLocaleString('ru-RU')} коинов` : ''}</div>
+                    {user && <NotificationBell />}
                     {user ? (
                         <>
                             {isAdmin && <NavLink to="/admin" className="admin-toggle-button">Админ</NavLink>}
@@ -340,6 +355,9 @@ function App() {
                     <Route path="/marketplace" element={<MarketplacePage />} />
                     <Route path="/pickem" element={<PickemPage events={pickemEvents} userPicks={userPicks} onPick={handleUserPick} />} />
                     <Route path="/fantasy" element={<FantasyPage />} />
+                    <Route path="/predictor" element={<PredictorPage />} />
+                    <Route path="/predictor/match/:matchId" element={<PredictorMatchPage />} />
+                    <Route path="/predictor/history" element={<PredictorHistoryPage />} />
                     <Route path="/profile/:userId" element={<ProfilePage />} />
                     
                     <Route path="/login" element={<LoginPage />} />
@@ -352,13 +370,15 @@ function App() {
                         <Route path="pickem" element={<AdminPickemDashboard events={pickemEvents} onAddEvent={handleAddEvent} onDeleteEvent={handleDeleteEvent} onSaveMatch={handleSaveMatch} onDeleteMatch={handleDeleteMatch} />} />
                         {/* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */}
                         <Route path="fantasy" element={<AdminFantasyPanel />} />
+                        <Route path="predictor" element={<AdminPredictorPanel />} />
                         {/* --- КОНЕЦ ИЗМЕНЕНИЯ --- */}
                       </Route>
                     </Route>
                   </Routes>
                 )}
             </main>
-        </div>
+            </div>
+        </NotificationProvider>
     );
 }
 

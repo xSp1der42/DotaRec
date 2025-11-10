@@ -26,6 +26,7 @@ app.use('/api/fantasy-settings', require('./routes/fantasySettingsRoutes'));
 app.use('/api/emblems', require('./routes/emblemRoutes'));
 app.use('/api/marketplace', require('./routes/marketplaceRoutes'));
 app.use('/api/seasons', require('./routes/seasonRoutes'));
+app.use('/api/predictor', require('./routes/predictorRoutes'));
 // ------------------
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
