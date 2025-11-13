@@ -1,3 +1,4 @@
+// backend/routes/predictorRoutes.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -9,6 +10,7 @@ const PredictorBet = require('../models/predictorBetModel');
 const Notification = require('../models/notificationModel');
 const PredictionService = require('../services/predictionService');
 const teamService = require('../services/teamService');
+const Player = require('../models/playerModel'); // НОВОЕ: Импортируем модель игрока
 
 // Создаем директорию для логотипов команд, если её нет
 const teamLogosDir = 'uploads/team-logos';
@@ -88,8 +90,8 @@ router.get('/matches', async (req, res) => {
 // GET /api/predictor/matches/:id - Получить детали конкретного матча
 router.get('/matches/:id', async (req, res) => {
   try {
-    const match = await PredictorMatch.findById(req.params.id);
-    
+    const match = await PredictorMatch.findById(req.params.id).lean(); // Используем .lean() для производительности
+
     if (!match) {
       return res.status(404).json({ 
         success: false,
@@ -98,6 +100,18 @@ router.get('/matches/:id', async (req, res) => {
           message: 'Match not found'
         }
       });
+    }
+
+    // НОВОЕ: Если есть предсказание на MVP, подгружаем игроков
+    const hasMvpPrediction = match.predictionTypes.some(p => p.type === 'mvp' && p.playerSource === 'match_teams');
+    
+    if (hasMvpPrediction) {
+      const teamNames = [match.team1.name, match.team2.name];
+      // Ищем игроков, чья команда совпадает с одной из команд матча
+      const players = await Player.find({ team: { $in: teamNames } })
+        .select('nickname fullName image_url team') // Выбираем только нужные поля
+        .lean();
+      match.players = players; // Добавляем игроков в объект матча
     }
     
     // Populate team logos from Team collection
@@ -732,14 +746,16 @@ router.get('/stats/:matchId', async (req, res) => {
       };
 
       // Инициализируем каждый вариант
-      predType.options.forEach(option => {
-        stats[predType.type].options[option] = {
-          choice: option,
-          betsCount: 0,
-          totalAmount: 0,
-          percentage: 0,
-        };
-      });
+      if (predType.type === 'winner') {
+          // Для 'winner' опции - это команды
+          [match.team1.name, match.team2.name].forEach(teamName => {
+              stats[predType.type].options[teamName] = { choice: teamName, betsCount: 0, totalAmount: 0, percentage: 0 };
+          });
+      } else if (predType.options) {
+          predType.options.forEach(option => {
+              stats[predType.type].options[option] = { choice: option, betsCount: 0, totalAmount: 0, percentage: 0 };
+          });
+      }
     });
 
     // Подсчитываем статистику по ставкам
@@ -872,7 +888,7 @@ router.get('/history', protect, async (req, res) => {
     });
 
     const totalPredictions = totalWins + totalLosses + totalPending;
-    const successRate = totalPredictions > 0 
+    const successRate = totalPredictions > 0 && (totalWins + totalLosses) > 0
       ? Math.round((totalWins / (totalWins + totalLosses)) * 100 * 100) / 100 
       : 0;
 
