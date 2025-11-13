@@ -18,6 +18,7 @@ const AdminLayout = () => {
                 <NavLink to="/admin/pickem" className={getAdminNavLinkClass}>Pick'em</NavLink>
                 <NavLink to="/admin/fantasy" className={getAdminNavLinkClass}>Фэнтези</NavLink>
                 <NavLink to="/admin/predictor" className={getAdminNavLinkClass}>Предсказания</NavLink>
+                <NavLink to="/admin/teams" className={getAdminNavLinkClass}>Логотипы команд</NavLink>
             </nav>
             <div className="admin-content">
                 <Outlet />

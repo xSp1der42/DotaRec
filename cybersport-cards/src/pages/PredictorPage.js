@@ -3,6 +3,7 @@ import api, { retryRequest } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import MatchCard from '../components/predictor/MatchCard';
+import logoService from '../services/logoService';
 import ErrorDisplay, { LoadingState, EmptyState } from '../components/shared/ErrorBoundary';
 import '../styles/PredictorPage.css';
 
@@ -30,6 +31,20 @@ const PredictorPage = () => {
       );
       
       setMatches(data);
+
+      // Preload team logos for better performance
+      if (data && data.length > 0) {
+        const teamIds = [];
+        data.forEach(match => {
+          if (match.team1?._id) teamIds.push(match.team1._id);
+          if (match.team2?._id) teamIds.push(match.team2._id);
+        });
+        
+        // Preload logos asynchronously without blocking UI
+        logoService.preloadLogos(teamIds, 'large').catch(err => {
+          console.warn('Logo preloading failed:', err);
+        });
+      }
     } catch (err) {
       console.error('Error fetching matches:', err);
       setError(err);

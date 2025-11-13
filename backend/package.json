@@ -9,7 +9,8 @@
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "test:watch": "jest --watch",
     "init:season": "node scripts/initSeason.js",
-    "init:predictor": "node scripts/initPredictorIndexes.js"
+    "init:predictor": "node scripts/initPredictorIndexes.js",
+    "migrate:teams": "node scripts/migrateTeamsFromMatches.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -20,6 +21,7 @@
     "mongodb": "^6.20.0",
     "mongoose": "^8.3.1",
     "multer": "^1.4.5-lts.1",
+    "sharp": "^0.34.5",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

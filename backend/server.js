@@ -27,9 +27,29 @@ app.use('/api/emblems', require('./routes/emblemRoutes'));
 app.use('/api/marketplace', require('./routes/marketplaceRoutes'));
 app.use('/api/seasons', require('./routes/seasonRoutes'));
 app.use('/api/predictor', require('./routes/predictorRoutes'));
+app.use('/api', require('./routes/logoRoutes'));
 // ------------------
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve static files with optimized caching headers for logos
+app.use('/uploads/team-logos', express.static(path.join(__dirname, 'uploads/team-logos'), {
+  maxAge: '1y', // Cache for 1 year
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, path) => {
+    // Set additional caching headers for logo files (requirement 5.1)
+    if (path.includes('team-logos')) {
+      res.set({
+        'Cache-Control': 'public, max-age=31536000, immutable', // 1 year, immutable
+        'Vary': 'Accept-Encoding'
+      });
+    }
+  }
+}));
+
+// Serve other uploads with standard caching
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '1d' // Cache for 1 day for other uploads
+}));
 
 const PORT = process.env.PORT || 5001;
 

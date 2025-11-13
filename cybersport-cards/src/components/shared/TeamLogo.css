@@ -1,0 +1,223 @@
+/* TeamLogo Component Styles */
+.team-logo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+/* Size variants */
+.team-logo--small {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.team-logo--medium {
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  min-height: 64px;
+}
+
+.team-logo--large {
+  width: 128px;
+  height: 128px;
+  min-width: 128px;
+  min-height: 128px;
+}
+
+/* Clickable state */
+.team-logo--clickable {
+  cursor: pointer;
+}
+
+.team-logo--clickable:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading state */
+.team-logo--loading {
+  background-color: #f8f9fa;
+}
+
+/* Error state */
+.team-logo--error {
+  background-color: #fff3cd;
+  border-color: #ffeaa7;
+}
+
+/* Image styles */
+.team-logo__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+/* Loading placeholder */
+.team-logo__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-logo__spinner {
+  width: 50%;
+  height: 50%;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: team-logo-spin 1s linear infinite;
+}
+
+@keyframes team-logo-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Fallback text styles */
+.team-logo__fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.team-logo__initials {
+  font-weight: bold;
+  text-align: center;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* Size-specific text sizing */
+.team-logo--small .team-logo__initials {
+  font-size: 10px;
+}
+
+.team-logo--medium .team-logo__initials {
+  font-size: 16px;
+}
+
+.team-logo--large .team-logo__initials {
+  font-size: 24px;
+}
+
+/* Empty state */
+.team-logo__empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+.team-logo__empty-icon {
+  font-weight: bold;
+}
+
+.team-logo--small .team-logo__empty-icon {
+  font-size: 12px;
+}
+
+.team-logo--medium .team-logo__empty-icon {
+  font-size: 20px;
+}
+
+.team-logo--large .team-logo__empty-icon {
+  font-size: 32px;
+}
+
+/* Tooltip */
+.team-logo__tooltip {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.team-logo__tooltip::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid rgba(0, 0, 0, 0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .team-logo--clickable:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .team-logo__tooltip {
+    display: none;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .team-logo {
+    background-color: #2d3748;
+    border-color: #4a5568;
+  }
+  
+  .team-logo--loading {
+    background-color: #2d3748;
+  }
+  
+  .team-logo--error {
+    background-color: #744210;
+    border-color: #d69e2e;
+  }
+  
+  .team-logo__empty {
+    background-color: #2d3748;
+    color: #a0aec0;
+  }
+  
+  .team-logo__spinner {
+    border-color: #4a5568;
+    border-top-color: #63b3ed;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .team-logo {
+    border-width: 2px;
+  }
+  
+  .team-logo__fallback {
+    background: #000;
+    color: #fff;
+  }
+}

@@ -105,23 +105,22 @@
   transform: scale(1.05);
 }
 
-.team-logo {
+.predictor-team-logo {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+}
+
+.predictor-team-logo .team-logo__image {
   padding: 8px;
 }
 
-.team-logo-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  font-weight: 700;
-  color: #5a67d8;
+.predictor-team-logo .team-logo__fallback {
   background: linear-gradient(135deg, rgba(90, 103, 216, 0.1), rgba(90, 103, 216, 0.2));
+}
+
+.predictor-team-logo .team-logo__initials {
+  font-size: 32px;
+  color: #5a67d8;
 }
 
 .team-name {

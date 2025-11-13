@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import PredictionForm from '../components/predictor/PredictionForm';
 import PredictionStats from '../components/predictor/PredictionStats';
+import TeamLogo from '../components/shared/TeamLogo';
+import logoService from '../services/logoService';
 import ErrorDisplay, { LoadingState } from '../components/shared/ErrorBoundary';
 import '../styles/PredictorMatchPage.css';
 
@@ -34,6 +36,19 @@ const PredictorMatchPage = () => {
       );
       
       setMatch(data);
+
+      // Preload team logos for the match
+      if (data) {
+        const teamIds = [];
+        if (data.team1?._id) teamIds.push(data.team1._id);
+        if (data.team2?._id) teamIds.push(data.team2._id);
+        
+        if (teamIds.length > 0) {
+          logoService.preloadLogos(teamIds, 'large').catch(err => {
+            console.warn('Logo preloading failed:', err);
+          });
+        }
+      }
     } catch (err) {
       console.error('Error fetching match details:', err);
       setError(err);
@@ -210,16 +225,13 @@ const PredictorMatchPage = () => {
       <div className="match-teams-section">
         <div className="team-info">
           <div className="team-logo-large">
-            {match.team1.logoUrl ? (
-              <img
-                src={`${process.env.REACT_APP_API_URL}${match.team1.logoUrl}`}
-                alt={match.team1.name}
-              />
-            ) : (
-              <div className="team-logo-placeholder-large">
-                {match.team1.name.charAt(0)}
-              </div>
-            )}
+            <TeamLogo
+              teamId={match.team1._id}
+              teamName={match.team1.name}
+              size="large"
+              showFallback={true}
+              className="predictor-match-team-logo"
+            />
           </div>
           <h2 className="team-name-large">{match.team1.name}</h2>
         </div>
@@ -228,16 +240,13 @@ const PredictorMatchPage = () => {
 
         <div className="team-info">
           <div className="team-logo-large">
-            {match.team2.logoUrl ? (
-              <img
-                src={`${process.env.REACT_APP_API_URL}${match.team2.logoUrl}`}
-                alt={match.team2.name}
-              />
-            ) : (
-              <div className="team-logo-placeholder-large">
-                {match.team2.name.charAt(0)}
-              </div>
-            )}
+            <TeamLogo
+              teamId={match.team2._id}
+              teamName={match.team2.name}
+              size="large"
+              showFallback={true}
+              className="predictor-match-team-logo"
+            />
           </div>
           <h2 className="team-name-large">{match.team2.name}</h2>
         </div>

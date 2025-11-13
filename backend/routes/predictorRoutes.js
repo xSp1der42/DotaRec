@@ -8,6 +8,7 @@ const PredictorMatch = require('../models/predictorMatchModel');
 const PredictorBet = require('../models/predictorBetModel');
 const Notification = require('../models/notificationModel');
 const PredictionService = require('../services/predictionService');
+const teamService = require('../services/teamService');
 
 // Создаем директорию для логотипов команд, если её нет
 const teamLogosDir = 'uploads/team-logos';
@@ -68,7 +69,10 @@ router.get('/matches', async (req, res) => {
       .sort({ startTime: 1 })
       .limit(50);
     
-    res.json(matches);
+    // Populate team logos from Team collection
+    const matchesWithLogos = await teamService.populateMatchesLogos(matches);
+    
+    res.json(matchesWithLogos);
   } catch (error) {
     console.error('Error fetching predictor matches:', error);
     res.status(500).json({ 
@@ -96,7 +100,10 @@ router.get('/matches/:id', async (req, res) => {
       });
     }
     
-    res.json(match);
+    // Populate team logos from Team collection
+    const matchWithLogos = await teamService.populateMatchLogos(match);
+    
+    res.json(matchWithLogos);
   } catch (error) {
     console.error('Error fetching match:', error);
     res.status(500).json({ 

@@ -1,4 +1,5 @@
 import React from 'react';
+import TeamLogo from '../shared/TeamLogo';
 import '../../styles/MatchCard.css';
 
 const MatchCard = ({ match, onClick }) => {
@@ -65,17 +66,13 @@ const MatchCard = ({ match, onClick }) => {
       <div className="match-teams">
         <div className="team">
           <div className="team-logo-wrapper">
-            {match.team1.logoUrl ? (
-              <img
-                src={`${process.env.REACT_APP_API_URL}${match.team1.logoUrl}`}
-                alt={match.team1.name}
-                className="team-logo"
-              />
-            ) : (
-              <div className="team-logo-placeholder">
-                {match.team1.name.charAt(0)}
-              </div>
-            )}
+            <TeamLogo
+              teamId={match.team1._id}
+              teamName={match.team1.name}
+              size="large"
+              showFallback={true}
+              className="predictor-team-logo"
+            />
           </div>
           <span className="team-name">{match.team1.name}</span>
         </div>
@@ -84,17 +81,13 @@ const MatchCard = ({ match, onClick }) => {
 
         <div className="team">
           <div className="team-logo-wrapper">
-            {match.team2.logoUrl ? (
-              <img
-                src={`${process.env.REACT_APP_API_URL}${match.team2.logoUrl}`}
-                alt={match.team2.name}
-                className="team-logo"
-              />
-            ) : (
-              <div className="team-logo-placeholder">
-                {match.team2.name.charAt(0)}
-              </div>
-            )}
+            <TeamLogo
+              teamId={match.team2._id}
+              teamName={match.team2.name}
+              size="large"
+              showFallback={true}
+              className="predictor-team-logo"
+            />
           </div>
           <span className="team-name">{match.team2.name}</span>
         </div>

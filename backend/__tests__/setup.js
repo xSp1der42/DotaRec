@@ -5,6 +5,9 @@ let mongoServer;
 
 // Setup before all tests
 beforeAll(async () => {
+  // Set JWT secret for tests
+  process.env.JWT_SECRET = 'test-jwt-secret-key';
+  
   mongoServer = await MongoMemoryServer.create();
   const mongoUri = mongoServer.getUri();
   

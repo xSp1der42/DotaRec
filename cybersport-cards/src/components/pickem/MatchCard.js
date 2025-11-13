@@ -1,4 +1,5 @@
 import React from 'react';
+import TeamLogo from '../shared/TeamLogo';
 import '../../styles/MatchCard.css';
 
 const MatchCard = ({ match, userPick, onPick }) => {
@@ -45,7 +46,12 @@ const MatchCard = ({ match, userPick, onPick }) => {
           className={`team-container ${isSelectable ? 'selectable' : ''} ${userPick === match.teamA.name ? 'selected' : ''}`}
           onClick={() => isSelectable && onPick(match.id, match.teamA.name)}
         >
-          <img src={match.teamA.logoUrl} alt={match.teamA.name} className="team-logo"/>
+          <TeamLogo 
+            teamId={match.teamA.id} 
+            teamName={match.teamA.name} 
+            size="small" 
+            className="team-logo"
+          />
           <span className="team-name">{match.teamA.name}</span>
         </div>
 
@@ -57,7 +63,12 @@ const MatchCard = ({ match, userPick, onPick }) => {
           className={`team-container ${isSelectable ? 'selectable' : ''} ${userPick === match.teamB.name ? 'selected' : ''}`}
           onClick={() => isSelectable && onPick(match.id, match.teamB.name)}
         >
-          <img src={match.teamB.logoUrl} alt={match.teamB.name} className="team-logo"/>
+          <TeamLogo 
+            teamId={match.teamB.id} 
+            teamName={match.teamB.name} 
+            size="small" 
+            className="team-logo"
+          />
           <span className="team-name">{match.teamB.name}</span>
         </div>
       </div>
